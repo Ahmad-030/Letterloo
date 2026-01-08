@@ -1,27 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'SplashScreen.dart';
 
 void main() {
-  runApp(const ABCFunLearningApp());
+  runApp(const LetterLooApp());
 }
 
-class ABCFunLearningApp extends StatelessWidget {
-  const ABCFunLearningApp({Key? key}) : super(key: key);
+class LetterLooApp extends StatelessWidget {
+  const LetterLooApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ABC Fun Learning',
+      title: 'LetterLoo - Learn ABC',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'Comic Sans MS',
+        primarySwatch: Colors.deepPurple,
+        textTheme: GoogleFonts.poppinsTextTheme(),
         colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.purple,
+          seedColor: const Color(0xFF6C63FF),
           brightness: Brightness.light,
         ),
+        scaffoldBackgroundColor: const Color(0xFFF8F9FE),
       ),
       home: const SplashScreen(),
-      debugShowCheckedModeBanner: false,
     );
   }
 }

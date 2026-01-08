@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'package:audioplayers/audioplayers.dart';
 
 class MatchingGameScreen extends StatefulWidget {
   const MatchingGameScreen({Key? key}) : super(key: key);
@@ -10,14 +11,16 @@ class MatchingGameScreen extends StatefulWidget {
 
 class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProviderStateMixin {
   final Map<String, List<String>> letterObjects = {
-    'A': ['🍎 Apple', '🐜 Ant', '✈️ Airplane'],
-    'B': ['🏀 Ball', '🦇 Bat', '🐝 Bee'],
-    'C': ['🐱 Cat', '🚗 Car', '☕ Cup'],
-    'D': ['🐕 Dog', '🦆 Duck', '🥁 Drum'],
-    'E': ['🐘 Elephant', '🥚 Egg', '✉️ Envelope'],
-    'F': ['🐸 Frog', '🌸 Flower', '🍟 Fries'],
-    'G': ['🦒 Giraffe', '🍇 Grapes', '🎸 Guitar'],
-    'H': ['🐴 Horse', '🏠 House', '🎩 Hat'],
+    'A': ['🍎 Apple', '🐜 Ant', '✈️ Airplane', '🎨 Art'],
+    'B': ['🏀 Ball', '🦇 Bat', '🐝 Bee', '🎈 Balloon'],
+    'C': ['🐱 Cat', '🚗 Car', '☕ Cup', '🍪 Cookie'],
+    'D': ['🐕 Dog', '🦆 Duck', '🥁 Drum', '🚪 Door'],
+    'E': ['🐘 Elephant', '🥚 Egg', '✉️ Envelope', '👁️ Eye'],
+    'F': ['🐸 Frog', '🌸 Flower', '🍟 Fries', '🔥 Fire'],
+    'G': ['🦒 Giraffe', '🍇 Grapes', '🎸 Guitar', '🎁 Gift'],
+    'H': ['🐴 Horse', '🏠 House', '🎩 Hat', '❤️ Heart'],
+    'I': ['🍦 Ice Cream', '🏝️ Island', '💡 Idea', '🦔 Iguana'],
+    'J': ['🕹️ Joystick', '🧃 Juice', '🤹 Juggle', '🃏 Joker'],
   };
 
   late List<String> currentLetters;
@@ -26,9 +29,12 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
   String? selectedObject;
   Set<String> matchedPairs = {};
   int score = 0;
+  int level = 1;
   late AnimationController _shakeController;
   late AnimationController _successController;
+  late AnimationController _pulseController;
   bool showingFeedback = false;
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
   void initState() {
@@ -41,12 +47,17 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    )..repeat(reverse: true);
     _initializeGame();
   }
 
   void _initializeGame() {
+    int pairCount = min(4 + level, 6);
     List<String> letters = letterObjects.keys.toList()..shuffle();
-    currentLetters = letters.take(4).toList();
+    currentLetters = letters.take(pairCount).toList();
     currentObjects = currentLetters.map((letter) {
       return letterObjects[letter]![Random().nextInt(letterObjects[letter]!.length)];
     }).toList()..shuffle();
@@ -56,7 +67,21 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
   void dispose() {
     _shakeController.dispose();
     _successController.dispose();
+    _pulseController.dispose();
+    _audioPlayer.dispose();
     super.dispose();
+  }
+
+  void _playSound(bool success) async {
+    try {
+      if (success) {
+        await _audioPlayer.play(AssetSource('audio/success.mp3'));
+      } else {
+        await _audioPlayer.play(AssetSource('audio/error.mp3'));
+      }
+    } catch (e) {
+      // Sound files not found
+    }
   }
 
   void _checkMatch() {
@@ -70,10 +95,11 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
 
     if (selectedLetter == objectLetter) {
       _successController.forward(from: 0);
+      _playSound(true);
       setState(() {
         matchedPairs.add(selectedLetter!);
         matchedPairs.add(selectedObject!);
-        score += 10;
+        score += 10 * level;
       });
 
       Future.delayed(const Duration(milliseconds: 800), () {
@@ -89,6 +115,7 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
       });
     } else {
       _shakeController.forward(from: 0);
+      _playSound(false);
       Future.delayed(const Duration(milliseconds: 500), () {
         setState(() {
           selectedLetter = null;
@@ -103,73 +130,125 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
+      builder: (context) => Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-        title: const Text(
-          '🎉 Amazing Job! 🎉',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Colors.green,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              '⭐⭐⭐',
-              style: TextStyle(fontSize: 50),
+        child: Container(
+          padding: const EdgeInsets.all(30),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF6C63FF), Color(0xFF5A52D5)],
             ),
-            const SizedBox(height: 20),
-            Text(
-              'Score: $score points!',
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.deepPurple,
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                '🎉 Level Complete! 🎉',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
               ),
-            ),
-          ],
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      '⭐⭐⭐',
+                      style: TextStyle(fontSize: 40),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Level $level',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF6C63FF),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      'Score: $score points',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.orange,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 25),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        setState(() {
+                          level++;
+                          matchedPairs.clear();
+                          selectedLetter = null;
+                          selectedObject = null;
+                          _initializeGame();
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.greenAccent,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      child: const Text(
+                        'Next Level',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      child: const Text(
+                        'Home',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF6C63FF),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-        actions: [
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              setState(() {
-                matchedPairs.clear();
-                score = 0;
-                selectedLetter = null;
-                selectedObject = null;
-                _initializeGame();
-              });
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            ),
-            child: const Text(
-              'Play Again',
-              style: TextStyle(fontSize: 18, color: Colors.white),
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            ),
-            child: const Text(
-              'Back to Home',
-              style: TextStyle(fontSize: 18, color: Colors.white),
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -178,14 +257,13 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.green.shade200,
-              Colors.teal.shade200,
-              Colors.blue.shade200,
+              Color(0xFF667EEA),
+              Color(0xFF764BA2),
             ],
           ),
         ),
@@ -193,23 +271,43 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
           child: Column(
             children: [
               _buildHeader(),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               _buildScoreBoard(),
-              const SizedBox(height: 30),
+              const SizedBox(height: 25),
               Expanded(
                 child: Row(
                   children: [
                     Expanded(child: _buildLetterColumn()),
+                    Container(
+                      width: 2,
+                      margin: const EdgeInsets.symmetric(vertical: 20),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.white.withOpacity(0.0),
+                            Colors.white.withOpacity(0.5),
+                            Colors.white.withOpacity(0.0),
+                          ],
+                        ),
+                      ),
+                    ),
                     Expanded(child: _buildObjectColumn()),
                   ],
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.all(20),
-                child: Text(
-                  'Tap a letter, then tap the matching object!',
+              Container(
+                padding: const EdgeInsets.all(20),
+                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  '👆 Tap a letter, then tap the matching object!',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -228,15 +326,21 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
       padding: const EdgeInsets.all(20),
       child: Row(
         children: [
-          IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
-            onPressed: () => Navigator.pop(context),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 24),
+              onPressed: () => Navigator.pop(context),
+            ),
           ),
           const Expanded(
             child: Text(
               '🎯 Matching Game',
               style: TextStyle(
-                fontSize: 28,
+                fontSize: 26,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
@@ -251,45 +355,59 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
 
   Widget _buildScoreBoard() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 10,
             spreadRadius: 2,
           ),
         ],
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          const Text(
-            '⭐ Score: ',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Colors.deepPurple,
-            ),
-          ),
-          Text(
-            '$score',
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.orange,
-            ),
-          ),
+          _buildScoreItem('🏆 Level', '$level'),
+          Container(width: 2, height: 30, color: Colors.grey.shade300),
+          _buildScoreItem('⭐ Score', '$score'),
+          Container(width: 2, height: 30, color: Colors.grey.shade300),
+          _buildScoreItem('✅ Matched', '${matchedPairs.length ~/ 2}/${currentLetters.length}'),
         ],
       ),
     );
   }
 
+  Widget _buildScoreItem(String label, String value) {
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF667EEA),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildLetterColumn() {
     return ListView.builder(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(15),
       itemCount: currentLetters.length,
       itemBuilder: (context, index) {
         String letter = currentLetters[index];
@@ -303,7 +421,6 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
             if (isSelected && showingFeedback && !isMatched) {
               shake = sin(_shakeController.value * pi * 4) * 10;
             }
-
             return Transform.translate(
               offset: Offset(shake, 0),
               child: child,
@@ -316,16 +433,17 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
                 _checkMatch();
               });
             },
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 20),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.only(bottom: 15),
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: isMatched
-                      ? [Colors.green.shade300, Colors.green.shade400]
+                      ? [Colors.green.shade400, Colors.green.shade600]
                       : isSelected
-                      ? [Colors.orange.shade300, Colors.orange.shade400]
-                      : [Colors.white, Colors.grey.shade100],
+                      ? [Colors.orange.shade400, Colors.orange.shade600]
+                      : [Colors.white, Colors.grey.shade50],
                 ),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
@@ -334,7 +452,8 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: (isMatched ? Colors.green : isSelected ? Colors.orange : Colors.grey)
+                        .withOpacity(0.3),
                     blurRadius: 10,
                     spreadRadius: 2,
                   ),
@@ -346,7 +465,7 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
                   style: TextStyle(
                     fontSize: 50,
                     fontWeight: FontWeight.bold,
-                    color: isMatched ? Colors.white : Colors.deepPurple,
+                    color: isMatched || isSelected ? Colors.white : const Color(0xFF667EEA),
                   ),
                 ),
               ),
@@ -359,7 +478,7 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
 
   Widget _buildObjectColumn() {
     return ListView.builder(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(15),
       itemCount: currentObjects.length,
       itemBuilder: (context, index) {
         String object = currentObjects[index];
@@ -371,9 +490,8 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
           builder: (context, child) {
             double scale = 1.0;
             if (isMatched && _successController.isAnimating) {
-              scale = 1.0 + (sin(_successController.value * pi) * 0.3);
+              scale = 1.0 + (sin(_successController.value * pi) * 0.2);
             }
-
             return Transform.scale(
               scale: scale,
               child: child,
@@ -386,16 +504,17 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
                 _checkMatch();
               });
             },
-            child: Container(
-              margin: const EdgeInsets.only(bottom: 20),
-              padding: const EdgeInsets.all(20),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.only(bottom: 15),
+              padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 18),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: isMatched
-                      ? [Colors.green.shade300, Colors.green.shade400]
+                      ? [Colors.green.shade400, Colors.green.shade600]
                       : isSelected
-                      ? [Colors.blue.shade300, Colors.blue.shade400]
-                      : [Colors.white, Colors.grey.shade100],
+                      ? [Colors.blue.shade400, Colors.blue.shade600]
+                      : [Colors.white, Colors.grey.shade50],
                 ),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
@@ -404,7 +523,8 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: (isMatched ? Colors.green : isSelected ? Colors.blue : Colors.grey)
+                        .withOpacity(0.3),
                     blurRadius: 10,
                     spreadRadius: 2,
                   ),
@@ -414,9 +534,9 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
                 child: Text(
                   object,
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: isMatched ? Colors.white : Colors.deepPurple,
+                    color: isMatched || isSelected ? Colors.white : const Color(0xFF667EEA),
                   ),
                   textAlign: TextAlign.center,
                 ),
