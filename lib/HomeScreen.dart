@@ -21,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _controllers = List.generate(
       4,
           (index) => AnimationController(
-        duration: Duration(milliseconds: 500 + (index * 100)),
+        duration: Duration(milliseconds: 600 + (index * 100)),
         vsync: this,
       ),
     );
@@ -52,64 +52,34 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.blue.shade200,
-              Colors.purple.shade200,
-              Colors.pink.shade200,
+              Color(0xFF667eea),
+              Color(0xFF764ba2),
+              Color(0xFFF093FB),
             ],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(20),
-                child: const Text(
-                  '🎓 ABC Fun Learning 🎓',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    shadows: [
-                      Shadow(
-                        blurRadius: 10.0,
-                        color: Colors.black26,
-                        offset: Offset(2.0, 2.0),
-                      ),
-                    ],
-                  ),
-                  textAlign: TextAlign.center, // FIXED: Added text alignment
-                ),
-              ),
-              const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text(
-                  'Choose an activity!',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.deepPurple,
-                  ),
-                ),
-              ),
+              const SizedBox(height: 30),
+              _buildHeader(),
+              const SizedBox(height: 15),
+              _buildSubtitle(),
+              const SizedBox(height: 30),
               Expanded(
                 child: GridView.count(
                   crossAxisCount: 2,
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(25),
                   mainAxisSpacing: 20,
                   crossAxisSpacing: 20,
+                  childAspectRatio: 0.95,
+                  physics: BouncingScrollPhysics(),
                   children: [
                     _buildGameCard(
                       context,
                       'Trace Letters',
-                      '✏️',
-                      Colors.orange,
-                      Colors.deepOrange,
+                      Icons.draw,
+                      [Color(0xFFFF6B6B), Color(0xFFFFE66D)],
                       0,
                           () => Navigator.push(
                         context,
@@ -121,9 +91,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     _buildGameCard(
                       context,
                       'Matching Game',
-                      '🎯',
-                      Colors.green,
-                      Colors.lightGreen,
+                      Icons.extension,
+                      [Color(0xFF4CAF50), Color(0xFF81C784)],
                       1,
                           () => Navigator.push(
                         context,
@@ -135,9 +104,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     _buildGameCard(
                       context,
                       'Sorting Game',
-                      '🔤',
-                      Colors.blue,
-                      Colors.lightBlue,
+                      Icons.sort_by_alpha,
+                      [Color(0xFF2196F3), Color(0xFF64B5F6)],
                       2,
                           () => Navigator.push(
                         context,
@@ -149,9 +117,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     _buildGameCard(
                       context,
                       'Storybook',
-                      '📚',
-                      Colors.purple,
-                      Colors.purpleAccent,
+                      Icons.menu_book,
+                      [Color(0xFF9C27B0), Color(0xFFBA68C8)],
                       3,
                           () => Navigator.push(
                         context,
@@ -170,12 +137,104 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  Widget _buildHeader() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 25),
+      padding: const EdgeInsets.all(25),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 20,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+              ),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: Text(
+              '🎓',
+              style: TextStyle(fontSize: 32),
+            ),
+          ),
+          SizedBox(width: 15),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'ABC Fun Learning',
+                style: TextStyle(
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF6C63FF),
+                  letterSpacing: 0.5,
+                ),
+              ),
+              Text(
+                'Learn • Play • Grow',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade600,
+                  letterSpacing: 1,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubtitle() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 40),
+      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.95),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 15,
+            offset: Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.touch_app, color: Color(0xFF6C63FF), size: 22),
+          SizedBox(width: 10),
+          Text(
+            'Choose Your Activity',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF6C63FF),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildGameCard(
       BuildContext context,
       String title,
-      String emoji,
-      Color color1,
-      Color color2,
+      IconData icon,
+      List<Color> colors,
       int index,
       VoidCallback onTap,
       ) {
@@ -188,48 +247,77 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [color1, color2],
+              colors: colors,
             ),
             borderRadius: BorderRadius.circular(25),
             boxShadow: [
               BoxShadow(
-                color: color1.withOpacity(0.5),
-                blurRadius: 15,
-                spreadRadius: 3,
-                offset: const Offset(0, 5),
+                color: colors[0].withOpacity(0.4),
+                blurRadius: 20,
+                spreadRadius: 2,
+                offset: const Offset(0, 10),
               ),
             ],
           ),
-          child: Padding( // FIXED: Use Padding instead of fixed constraints
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Flexible( // FIXED: Make emoji flexible
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      emoji,
-                      style: const TextStyle(fontSize: 60),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(25),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.3),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        icon,
+                        size: 50,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Flexible( // FIXED: Make text flexible
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
+                    const SizedBox(height: 15),
+                    Text(
                       title,
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
+                        letterSpacing: 0.5,
                       ),
                       textAlign: TextAlign.center,
                     ),
-                  ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.play_arrow, color: Colors.white, size: 16),
+                          SizedBox(width: 4),
+                          Text(
+                            'Play',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
         ),
