@@ -11,9 +11,7 @@ class GetStartedScreen extends StatefulWidget {
 
 class _GetStartedScreenState extends State<GetStartedScreen> with TickerProviderStateMixin {
   late AnimationController _floatingController;
-  late AnimationController _fadeController;
   late Animation<double> _floatingAnimation;
-  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
@@ -23,26 +21,14 @@ class _GetStartedScreenState extends State<GetStartedScreen> with TickerProvider
       vsync: this,
     )..repeat(reverse: true);
 
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-
     _floatingAnimation = Tween<double>(begin: -10, end: 10).animate(
       CurvedAnimation(parent: _floatingController, curve: Curves.easeInOut),
     );
-
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeIn),
-    );
-
-    _fadeController.forward();
   }
 
   @override
   void dispose() {
     _floatingController.dispose();
-    _fadeController.dispose();
     super.dispose();
   }
 
@@ -50,131 +36,117 @@ class _GetStartedScreenState extends State<GetStartedScreen> with TickerProvider
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF6C63FF),
-              Color(0xFF5A52D5),
-              Color(0xFF4840BA),
+              Colors.orange.shade200,
+              Colors.yellow.shade200,
+              Colors.green.shade200,
             ],
           ),
         ),
         child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnimation,
-            child: Column(
-              children: [
-                const Spacer(),
-                AnimatedBuilder(
-                  animation: _floatingAnimation,
-                  builder: (context, child) {
-                    return Transform.translate(
-                      offset: Offset(0, _floatingAnimation.value),
-                      child: child,
-                    );
-                  },
-                  child: Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(40),
+          child: Center(
+            child: SingleChildScrollView( // FIXED: Added scrolling to prevent overflow
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 20),
+                    AnimatedBuilder(
+                      animation: _floatingAnimation,
+                      builder: (context, child) {
+                        return Transform.translate(
+                          offset: Offset(0, _floatingAnimation.value),
+                          child: child,
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(30),
+                        margin: const EdgeInsets.symmetric(horizontal: 20),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(30),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.2),
-                              blurRadius: 30,
-                              spreadRadius: 10,
+                              blurRadius: 20,
+                              spreadRadius: 5,
                             ),
                           ],
                         ),
-                        child: const Text(
-                          'ABC',
-                          style: TextStyle(
-                            fontSize: 70,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF6C63FF),
-                          ),
+                        child: Column(
+                          children: const [
+                            Text(
+                              '🎨',
+                              style: TextStyle(fontSize: 60),
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              'ABC Fun Learning',
+                              style: TextStyle(
+                                fontSize: 36,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.deepPurple,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              '🎨',
+                              style: TextStyle(fontSize: 60),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 40),
-                      const Text(
-                        'LetterLoo',
+                    ),
+                    const SizedBox(height: 40),
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.8),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text(
+                        'Learn letters, play games,\nand have fun!',
                         style: TextStyle(
-                          fontSize: 48,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 2,
+                          fontSize: 22,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w600,
                         ),
+                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 15),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        child: const Text(
-                          '🎨 Learn • Play • Grow 🚀',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            letterSpacing: 1,
-                          ),
-                        ),
+                    ),
+                    const SizedBox(height: 60),
+                    _buildAnimatedButton(
+                      context,
+                      'Get Started! 🚀',
+                      Colors.green,
+                      Colors.greenAccent,
+                          () => Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const HomeScreen()),
                       ),
-                    ],
-                  ),
-                ),
-                const Spacer(),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
-                  child: Column(
-                    children: [
-                      _buildFeatureRow(Icons.edit, 'Interactive letter tracing'),
-                      const SizedBox(height: 12),
-                      _buildFeatureRow(Icons.games, 'Fun matching & sorting games'),
-                      const SizedBox(height: 12),
-                      _buildFeatureRow(Icons.book, 'Engaging storybooks'),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 40),
-                _buildButton(
-                  'Get Started! 🚀',
-                  [const Color(0xFF11998E), const Color(0xFF38EF7D)],
-                      () => Navigator.pushReplacement(
-                    context,
-                    PageRouteBuilder(
-                      pageBuilder: (context, animation, secondaryAnimation) => const HomeScreen(),
-                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                        return FadeTransition(opacity: animation, child: child);
-                      },
-                      transitionDuration: const Duration(milliseconds: 600),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 15),
-                TextButton.icon(
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AboutScreen()),
-                  ),
-                  icon: const Icon(Icons.info_outline, color: Colors.white),
-                  label: const Text(
-                    'About',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
+                    const SizedBox(height: 20),
+                    _buildAnimatedButton(
+                      context,
+                      'About 📖',
+                      Colors.blue,
+                      Colors.lightBlueAccent,
+                          () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const AboutScreen()),
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                  ],
                 ),
-                const SizedBox(height: 40),
-              ],
+              ),
             ),
           ),
         ),
@@ -182,62 +154,57 @@ class _GetStartedScreenState extends State<GetStartedScreen> with TickerProvider
     );
   }
 
-  Widget _buildFeatureRow(IconData icon, String text) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(10),
+  Widget _buildAnimatedButton(
+      BuildContext context,
+      String text,
+      Color color1,
+      Color color2,
+      VoidCallback onPressed,
+      ) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 800),
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: 0.8 + (value * 0.2),
+          child: child,
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [color1, color2],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
           ),
-          child: Icon(icon, color: Colors.white, size: 20),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: color1.withOpacity(0.5),
+              blurRadius: 15,
+              spreadRadius: 2,
+              offset: const Offset(0, 5),
+            ),
+          ],
         ),
-        const SizedBox(width: 15),
-        Text(
-          text,
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 20),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildButton(String text, List<Color> colors, VoidCallback onPressed) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 40),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: colors),
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: colors[0].withOpacity(0.3),
-            blurRadius: 15,
-            spreadRadius: 2,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-          ),
-        ),
-        child: Text(
-          text,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
           ),
         ),
       ),
