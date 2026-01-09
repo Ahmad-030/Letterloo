@@ -123,7 +123,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                 child: Column(
                   children: [
                     Text(
-                      'ABC Fun Learning',
+                      'LetterLoo',
                       style: TextStyle(
                         fontSize: 42,
                         fontWeight: FontWeight.bold,

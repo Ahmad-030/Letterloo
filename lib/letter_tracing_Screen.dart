@@ -11,67 +11,91 @@ class LetterTracingScreen extends StatefulWidget {
 class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerProviderStateMixin {
   int currentLetterIndex = 0;
   final List<String> letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-  bool isTraced = false;
   List<Offset> drawnPoints = [];
+  bool isTraced = false;
+  double tracingProgress = 0.0;
+  late AnimationController _celebrationController;
+  late AnimationController _hintController;
   List<Offset> stars = [];
-  late AnimationController _starController;
-  late AnimationController _letterController;
-  double tracedPercentage = 0.0;
 
   @override
   void initState() {
     super.initState();
-    _starController = AnimationController(
+    _celebrationController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    _letterController = AnimationController(
-      duration: const Duration(milliseconds: 600),
+    _hintController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
       vsync: this,
-    );
-    _letterController.forward();
+    )..repeat(reverse: true);
   }
 
   @override
   void dispose() {
-    _starController.dispose();
-    _letterController.dispose();
+    _celebrationController.dispose();
+    _hintController.dispose();
     super.dispose();
   }
 
-  void _onLetterTraced() {
+  void _onDrawUpdate(Offset point) {
+    if (isTraced) return;
+
+    setState(() {
+      drawnPoints.add(point);
+      _calculateProgress();
+    });
+
+    if (tracingProgress >= 0.75 && !isTraced) {
+      _onLetterCompleted();
+    }
+  }
+
+  void _calculateProgress() {
+    if (drawnPoints.isEmpty) {
+      tracingProgress = 0.0;
+      return;
+    }
+
+    // Simple progress calculation based on coverage
+    Set<String> coveredAreas = {};
+    for (var point in drawnPoints) {
+      int gridX = (point.dx / 30).floor();
+      int gridY = (point.dy / 30).floor();
+      coveredAreas.add('$gridX,$gridY');
+    }
+
+    // Estimate based on letter complexity - more lenient calculation
+    double expectedCoverage = 12 + (letters[currentLetterIndex].codeUnitAt(0) % 8);
+    tracingProgress = (coveredAreas.length / expectedCoverage).clamp(0.0, 1.0);
+  }
+
+  void _onLetterCompleted() {
     if (isTraced) return;
 
     setState(() {
       isTraced = true;
       stars = List.generate(
-        15,
+        25,
             (index) => Offset(
-          50 + math.Random().nextDouble() * 200,
-          50 + math.Random().nextDouble() * 250,
+          40 + math.Random().nextDouble() * 240,
+          40 + math.Random().nextDouble() * 300,
         ),
       );
     });
 
-    _starController.forward(from: 0);
-  }
-
-  void _checkTracingProgress() {
-    if (drawnPoints.length > 50 && !isTraced) {
-      _onLetterTraced();
-    }
+    _celebrationController.forward(from: 0);
   }
 
   void _nextLetter() {
     if (currentLetterIndex < letters.length - 1) {
       setState(() {
         currentLetterIndex++;
-        isTraced = false;
         drawnPoints = [];
+        isTraced = false;
+        tracingProgress = 0.0;
         stars = [];
-        tracedPercentage = 0.0;
-        _starController.reset();
-        _letterController.forward(from: 0);
+        _celebrationController.reset();
       });
     }
   }
@@ -80,14 +104,23 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
     if (currentLetterIndex > 0) {
       setState(() {
         currentLetterIndex--;
-        isTraced = false;
         drawnPoints = [];
+        isTraced = false;
+        tracingProgress = 0.0;
         stars = [];
-        tracedPercentage = 0.0;
-        _starController.reset();
-        _letterController.forward(from: 0);
+        _celebrationController.reset();
       });
     }
+  }
+
+  void _resetCurrentLetter() {
+    setState(() {
+      drawnPoints = [];
+      isTraced = false;
+      tracingProgress = 0.0;
+      stars = [];
+      _celebrationController.reset();
+    });
   }
 
   @override
@@ -96,14 +129,14 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
 
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Color(0xFFFF9A9E),
-              Color(0xFFFAD0C4),
-              Color(0xFFFBC2EB),
+              Color(0xFF667eea),
+              Color(0xFF764ba2),
+              Color(0xFFF093FB),
             ],
           ),
         ),
@@ -120,7 +153,7 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
                     alignment: Alignment.center,
                     children: [
                       _buildTracingArea(currentLetter),
-                      if (isTraced) _buildStarAnimation(),
+                      if (isTraced) _buildCelebrationAnimation(),
                     ],
                   ),
                 ),
@@ -145,7 +178,7 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             blurRadius: 15,
-            offset: Offset(0, 5),
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -167,7 +200,10 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(width: 40),
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Color(0xFF6C63FF), size: 24),
+            onPressed: _resetCurrentLetter,
+          ),
         ],
       ),
     );
@@ -190,14 +226,14 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
                 ),
               ),
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Text(
                   letters[currentLetterIndex],
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF6C63FF),
@@ -214,14 +250,14 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
                 BoxShadow(
                   color: Colors.black.withOpacity(0.1),
                   blurRadius: 8,
-                  offset: Offset(0, 2),
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
               child: LinearProgressIndicator(
-                value: (currentLetterIndex + 1) / letters.length,
+                value: tracingProgress,
                 minHeight: 12,
                 backgroundColor: Colors.white.withOpacity(0.5),
                 valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
@@ -236,23 +272,29 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
   Widget _buildTracingArea(String letter) {
     return GestureDetector(
       onPanStart: (details) {
-        setState(() {
-          drawnPoints = [];
-        });
-      },
-      onPanUpdate: (details) {
-        setState(() {
+        if (!isTraced) {
           RenderBox? box = context.findRenderObject() as RenderBox?;
           if (box != null) {
-            Offset point = box.globalToLocal(details.globalPosition);
-            drawnPoints.add(point);
-            tracedPercentage = (drawnPoints.length / 50).clamp(0.0, 1.0);
-            _checkTracingProgress();
+            Offset localPosition = box.globalToLocal(details.globalPosition);
+            _onDrawUpdate(localPosition);
           }
-        });
+        }
       },
-      onPanEnd: (details) {
-        _checkTracingProgress();
+      onPanUpdate: (details) {
+        if (!isTraced) {
+          RenderBox? box = context.findRenderObject() as RenderBox?;
+          if (box != null) {
+            Offset localPosition = box.globalToLocal(details.globalPosition);
+            _onDrawUpdate(localPosition);
+          }
+        }
+      },
+      onPanEnd: (_) {
+        if (!isTraced) {
+          setState(() {
+            drawnPoints.add(Offset.infinite); // Add break point
+          });
+        }
       },
       child: Container(
         width: 320,
@@ -262,196 +304,203 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: Color(0xFF6C63FF).withOpacity(0.2),
+              color: const Color(0xFF6C63FF).withOpacity(0.2),
               blurRadius: 30,
               spreadRadius: 5,
-              offset: Offset(0, 10),
+              offset: const Offset(0, 10),
             ),
           ],
         ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Progress indicator
-            if (!isTraced && drawnPoints.isNotEmpty)
-              Positioned(
-                top: 20,
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Color(0xFF6C63FF).withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '${(tracedPercentage * 100).toInt()}%',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(30),
+          child: Stack(
+            children: [
+              // Guide letter with animated hint
+              Center(
+                child: AnimatedBuilder(
+                  animation: _hintController,
+                  builder: (context, child) {
+                    return Opacity(
+                      opacity: isTraced ? 0 : (0.15 + (_hintController.value * 0.05)),
+                      child: Text(
+                        letter,
+                        style: TextStyle(
+                          fontSize: 240,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade300,
+                          height: 1.0,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              // User's drawing
+              CustomPaint(
+                size: const Size(320, 380),
+                painter: DrawingPainter(points: drawnPoints),
+              ),
+
+              // Completed letter
+              if (isTraced)
+                Center(
+                  child: ScaleTransition(
+                    scale: _celebrationController,
+                    child: Text(
+                      letter,
+                      style: TextStyle(
+                        fontSize: 240,
+                        fontWeight: FontWeight.bold,
+                        height: 1.0,
+                        foreground: Paint()
+                          ..shader = const LinearGradient(
+                            colors: [
+                              Color(0xFF667eea),
+                              Color(0xFF764ba2),
+                              Color(0xFFF093FB),
+                            ],
+                          ).createShader(const Rect.fromLTWH(0, 0, 240, 240)),
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-            // Letter outline
-            if (!isTraced)
-              ScaleTransition(
-                scale: _letterController,
-                child: Text(
-                  letter,
-                  style: TextStyle(
-                    fontSize: 220,
-                    fontWeight: FontWeight.bold,
-                    foreground: Paint()
-                      ..style = PaintingStyle.stroke
-                      ..strokeWidth = 8
-                      ..color = Colors.grey.shade300,
-                  ),
-                ),
-              ),
-
-            // Traced letter (colored)
-            if (isTraced)
-              ScaleTransition(
-                scale: _starController,
-                child: Text(
-                  letter,
-                  style: TextStyle(
-                    fontSize: 220,
-                    fontWeight: FontWeight.bold,
-                    foreground: Paint()
-                      ..shader = LinearGradient(
-                        colors: [
-                          Color(0xFF667eea),
-                          Color(0xFF764ba2),
-                          Color(0xFFF093FB),
+              // Instructions
+              if (!isTraced && drawnPoints.isEmpty)
+                Positioned(
+                  bottom: 30,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF6C63FF).withOpacity(0.95),
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
                         ],
-                      ).createShader(const Rect.fromLTWH(0, 0, 220, 220)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.gesture, color: Colors.white, size: 22),
+                          SizedBox(width: 10),
+                          Text(
+                            'Trace the letter with your finger',
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
 
-            // Custom drawing path
-            if (!isTraced)
-              CustomPaint(
-                size: Size(320, 380),
-                painter: DrawingPainter(drawnPoints),
-              ),
-
-            // Instructions
-            if (!isTraced && drawnPoints.isEmpty)
-              Positioned(
-                bottom: 40,
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Color(0xFF6C63FF).withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.touch_app, color: Colors.white, size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        'Trace the letter!',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
+              // Success message
+              if (isTraced)
+                Positioned(
+                  bottom: 30,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4CAF50),
+                        borderRadius: BorderRadius.circular(25),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF4CAF50).withOpacity(0.5),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
                       ),
-                    ],
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check_circle, color: Colors.white, size: 24),
+                          SizedBox(width: 8),
+                          Text(
+                            'Excellent! Well Done! 🎉',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
-
-            // Success message
-            if (isTraced)
-              Positioned(
-                bottom: 40,
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Color(0xFF4CAF50),
-                    borderRadius: BorderRadius.circular(25),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color(0xFF4CAF50).withOpacity(0.4),
-                        blurRadius: 12,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.check_circle, color: Colors.white, size: 24),
-                      SizedBox(width: 8),
-                      Text(
-                        'Excellent Work!',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildStarAnimation() {
-    return Stack(
-      children: stars.map((position) {
-        return AnimatedBuilder(
-          animation: _starController,
-          builder: (context, child) {
+  Widget _buildCelebrationAnimation() {
+    return AnimatedBuilder(
+      animation: _celebrationController,
+      builder: (context, child) {
+        return Stack(
+          children: stars.map((star) {
             return Positioned(
-              left: position.dx,
-              top: position.dy - (_starController.value * 80),
+              left: star.dx,
+              top: star.dy - (_celebrationController.value * 120),
               child: Opacity(
-                opacity: 1.0 - _starController.value,
-                child: Transform.scale(
-                  scale: 1.0 + (_starController.value * 0.5),
-                  child: Transform.rotate(
-                    angle: _starController.value * 4 * math.pi,
-                    child: const Text(
-                      '⭐',
-                      style: TextStyle(fontSize: 32),
-                    ),
+                opacity: 1 - _celebrationController.value,
+                child: Transform.rotate(
+                  angle: _celebrationController.value * 2 * math.pi,
+                  child: const Text(
+                    '⭐',
+                    style: TextStyle(fontSize: 30),
                   ),
                 ),
               ),
             );
-          },
+          }).toList(),
         );
-      }).toList(),
+      },
     );
   }
 
   Widget _buildNavigationButtons() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 40),
+      padding: const EdgeInsets.symmetric(horizontal: 30),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildNavButton(
-            icon: Icons.arrow_back_ios,
-            enabled: currentLetterIndex > 0,
-            onPressed: _previousLetter,
-            color: Color(0xFF6C63FF),
+            icon: Icons.arrow_back,
+            label: 'Previous',
+            onPressed: currentLetterIndex > 0 ? _previousLetter : null,
+            gradient: currentLetterIndex > 0
+                ? const LinearGradient(
+              colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+            )
+                : null,
           ),
           _buildNavButton(
-            icon: Icons.arrow_forward_ios,
-            enabled: currentLetterIndex < letters.length - 1,
-            onPressed: _nextLetter,
-            color: Color(0xFF4CAF50),
+            icon: Icons.arrow_forward,
+            label: 'Next',
+            onPressed: currentLetterIndex < letters.length - 1 ? _nextLetter : null,
+            gradient: currentLetterIndex < letters.length - 1
+                ? const LinearGradient(
+              colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+            )
+                : null,
           ),
         ],
       ),
@@ -460,45 +509,51 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
 
   Widget _buildNavButton({
     required IconData icon,
-    required bool enabled,
-    required VoidCallback onPressed,
-    required Color color,
+    required String label,
+    required VoidCallback? onPressed,
+    Gradient? gradient,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: enabled
-            ? LinearGradient(
-          colors: [color, color.withOpacity(0.7)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        )
-            : null,
-        color: enabled ? null : Colors.grey.shade400,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: enabled
-            ? [
-          BoxShadow(
-            color: color.withOpacity(0.4),
-            blurRadius: 15,
-            offset: Offset(0, 5),
+    return Opacity(
+      opacity: onPressed != null ? 1.0 : 0.4,
+      child: GestureDetector(
+        onTap: onPressed,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          decoration: BoxDecoration(
+            gradient: gradient ??
+                LinearGradient(
+                  colors: [Colors.grey.shade400, Colors.grey.shade500],
+                ),
+            borderRadius: BorderRadius.circular(25),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-        ]
-            : null,
-      ),
-      child: ElevatedButton(
-        onPressed: enabled ? onPressed : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.transparent,
-          shadowColor: Colors.transparent,
-          padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 18),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon == Icons.arrow_back) ...[
+                Icon(icon, color: Colors.white, size: 20),
+                const SizedBox(width: 8),
+              ],
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              if (icon == Icons.arrow_forward) ...[
+                const SizedBox(width: 8),
+                Icon(icon, color: Colors.white, size: 20),
+              ],
+            ],
           ),
-        ),
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: 24,
         ),
       ),
     );
@@ -508,22 +563,36 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
 class DrawingPainter extends CustomPainter {
   final List<Offset> points;
 
-  DrawingPainter(this.points);
+  DrawingPainter({required this.points});
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Color(0xFF6C63FF)
-      ..strokeWidth = 12
-      ..strokeCap = StrokeCap.round;
+      ..color = const Color(0xFF667eea)
+      ..strokeWidth = 8
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
 
     for (int i = 0; i < points.length - 1; i++) {
-      if (points[i] != null && points[i + 1] != null) {
+      if (points[i].isFinite && points[i + 1].isFinite) {
         canvas.drawLine(points[i], points[i + 1], paint);
+      }
+    }
+
+    // Draw circles at points for a smoother look
+    final circlePaint = Paint()
+      ..color = const Color(0xFF667eea)
+      ..style = PaintingStyle.fill;
+
+    for (var point in points) {
+      if (point.isFinite) {
+        canvas.drawCircle(point, 4, circlePaint);
       }
     }
   }
 
   @override
-  bool shouldRepaint(DrawingPainter oldDelegate) => true;
+  bool shouldRepaint(DrawingPainter oldDelegate) {
+    return oldDelegate.points.length != points.length;
+  }
 }

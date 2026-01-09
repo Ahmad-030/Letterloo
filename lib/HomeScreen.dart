@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   padding: const EdgeInsets.all(25),
                   mainAxisSpacing: 20,
                   crossAxisSpacing: 20,
-                  childAspectRatio: 0.95,
+                  childAspectRatio: 0.6,
                   physics: BouncingScrollPhysics(),
                   children: [
                     _buildGameCard(
@@ -173,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'ABC Fun Learning',
+                'LetterLoo',
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,

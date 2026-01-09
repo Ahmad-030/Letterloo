@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'HomeScreen.dart';
 import 'about_Screen.dart';
+import 'Privacy_Policy_Screen.dart';
 
 class GetStartedScreen extends StatefulWidget {
   const GetStartedScreen({Key? key}) : super(key: key);
@@ -64,146 +65,166 @@ class _GetStartedScreenState extends State<GetStartedScreen> with TickerProvider
           ),
         ),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(30),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Spacer(),
-                ScaleTransition(
-                  scale: _scaleAnimation,
-                  child: AnimatedBuilder(
-                    animation: _floatingAnimation,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(0, _floatingAnimation.value),
-                        child: child,
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(40),
+          child: SingleChildScrollView(
+            physics: BouncingScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(height: 40),
+                    ScaleTransition(
+                      scale: _scaleAnimation,
+                      child: AnimatedBuilder(
+                        animation: _floatingAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(0, _floatingAnimation.value),
+                            child: child,
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(30),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(40),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 30,
+                                spreadRadius: 5,
+                                offset: Offset(0, 15),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.school,
+                                  size: 50,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              Text(
+                                'ABC Fun Learning',
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF6C63FF),
+                                  letterSpacing: 0.5,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Color(0xFF6C63FF).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text(
+                                  'Version 1.0.0',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF6C63FF),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 18),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(40),
+                        color: Colors.white.withOpacity(0.95),
+                        borderRadius: BorderRadius.circular(25),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 30,
-                            spreadRadius: 5,
-                            offset: Offset(0, 15),
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 20,
+                            offset: Offset(0, 10),
                           ),
                         ],
                       ),
                       child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Container(
-                            padding: EdgeInsets.all(25),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-                              ),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.school,
-                              size: 70,
-                              color: Colors.white,
-                            ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              _buildFeatureIcon(Icons.draw, Color(0xFFFF6B6B)),
+                              SizedBox(width: 12),
+                              _buildFeatureIcon(Icons.extension, Color(0xFF4CAF50)),
+                              SizedBox(width: 12),
+                              _buildFeatureIcon(Icons.menu_book, Color(0xFF2196F3)),
+                            ],
                           ),
-                          const SizedBox(height: 25),
+                          SizedBox(height: 12),
                           Text(
-                            'ABC Fun Learning',
+                            'Learn letters through\ninteractive games!',
                             style: TextStyle(
-                              fontSize: 34,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 17,
                               color: Color(0xFF6C63FF),
-                              letterSpacing: 0.5,
+                              fontWeight: FontWeight.bold,
+                              height: 1.3,
                             ),
                             textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 10),
-                          Container(
-                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: Color(0xFF6C63FF).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              'Version 1.0.0',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF6C63FF),
-                              ),
-                            ),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 50),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.95),
-                    borderRadius: BorderRadius.circular(25),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 20,
-                        offset: Offset(0, 10),
+                    const SizedBox(height: 50),
+                    _buildButton(
+                      'Get Started',
+                      Icons.rocket_launch,
+                      [Color(0xFF4CAF50), Color(0xFF81C784)],
+                          () => Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const HomeScreen()),
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          _buildFeatureIcon(Icons.draw, Color(0xFFFF6B6B)),
-                          SizedBox(width: 15),
-                          _buildFeatureIcon(Icons.extension, Color(0xFF4CAF50)),
-                          SizedBox(width: 15),
-                          _buildFeatureIcon(Icons.menu_book, Color(0xFF2196F3)),
-                        ],
+                    ),
+                    const SizedBox(height: 15),
+                    _buildButton(
+                      'About',
+                      Icons.info_outline,
+                      [Color(0xFF6C63FF), Color(0xFF9575CD)],
+                          () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const AboutScreen()),
                       ),
-                      SizedBox(height: 15),
-                      Text(
-                        'Learn letters through\ninteractive games!',
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: Color(0xFF6C63FF),
-                          fontWeight: FontWeight.bold,
-                          height: 1.4,
-                        ),
-                        textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 15),
+                    _buildButton(
+                      'Privacy Policy',
+                      Icons.shield,
+                      [Color(0xFFFFA726), Color(0xFFFF7043)],
+                          () => Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 40),
+                  ],
                 ),
-                const Spacer(),
-                _buildButton(
-                  'Get Started',
-                  Icons.rocket_launch,
-                  [Color(0xFF4CAF50), Color(0xFF81C784)],
-                      () => Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => const HomeScreen()),
-                  ),
-                ),
-                const SizedBox(height: 15),
-                _buildButton(
-                  'About',
-                  Icons.info_outline,
-                  [Color(0xFF6C63FF), Color(0xFF9575CD)],
-                      () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AboutScreen()),
-                  ),
-                ),
-                const SizedBox(height: 30),
-              ],
+              ),
             ),
           ),
         ),
@@ -213,12 +234,12 @@ class _GetStartedScreenState extends State<GetStartedScreen> with TickerProvider
 
   Widget _buildFeatureIcon(IconData icon, Color color) {
     return Container(
-      padding: EdgeInsets.all(12),
+      padding: EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(12),
       ),
-      child: Icon(icon, color: color, size: 28),
+      child: Icon(icon, color: color, size: 24),
     );
   }
 
@@ -230,7 +251,7 @@ class _GetStartedScreenState extends State<GetStartedScreen> with TickerProvider
       ) {
     return Container(
       width: double.infinity,
-      height: 65,
+      height: 60,
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: colors,
@@ -258,12 +279,12 @@ class _GetStartedScreenState extends State<GetStartedScreen> with TickerProvider
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: Colors.white, size: 26),
-            SizedBox(width: 12),
+            Icon(icon, color: Colors.white, size: 24),
+            SizedBox(width: 10),
             Text(
               text,
               style: const TextStyle(
-                fontSize: 22,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
                 letterSpacing: 0.5,
