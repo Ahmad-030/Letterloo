@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'package:audioplayers/audioplayers.dart';
 
 class LetterTracingScreen extends StatefulWidget {
   const LetterTracingScreen({Key? key}) : super(key: key);
@@ -17,10 +18,14 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
   late AnimationController _celebrationController;
   late AnimationController _hintController;
   List<Offset> stars = [];
+  late AudioPlayer _audioPlayer;
+  bool isMuted = false;
 
   @override
   void initState() {
     super.initState();
+    _audioPlayer = AudioPlayer();
+
     _celebrationController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
@@ -35,7 +40,25 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
   void dispose() {
     _celebrationController.dispose();
     _hintController.dispose();
+    _audioPlayer.dispose();
     super.dispose();
+  }
+
+  Future<void> _playSuccessSound() async {
+    if (isMuted) return;
+
+    try {
+      await _audioPlayer.stop();
+      await _audioPlayer.play(AssetSource('audio/succes.mp3'));
+    } catch (e) {
+      debugPrint('Error playing sound: $e');
+    }
+  }
+
+  void _toggleMute() {
+    setState(() {
+      isMuted = !isMuted;
+    });
   }
 
   void _onDrawUpdate(Offset point) {
@@ -85,6 +108,7 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
     });
 
     _celebrationController.forward(from: 0);
+    _playSuccessSound(); // Play sound when letter is completed
   }
 
   void _nextLetter() {
@@ -172,11 +196,11 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.95),
+        color: Colors.white.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -204,6 +228,14 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
             icon: const Icon(Icons.refresh, color: Color(0xFF6C63FF), size: 24),
             onPressed: _resetCurrentLetter,
           ),
+          IconButton(
+            icon: Icon(
+              isMuted ? Icons.volume_off : Icons.volume_up,
+              color: Color(0xFF6C63FF),
+              size: 24,
+            ),
+            onPressed: _toggleMute,
+          ),
         ],
       ),
     );
@@ -228,7 +260,7 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
+                  color: Colors.white.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Text(
@@ -248,7 +280,7 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
               borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -259,7 +291,7 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
               child: LinearProgressIndicator(
                 value: tracingProgress,
                 minHeight: 12,
-                backgroundColor: Colors.white.withOpacity(0.5),
+                backgroundColor: Colors.white.withValues(alpha: 0.5),
                 valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
               ),
             ),
@@ -304,7 +336,7 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF6C63FF).withOpacity(0.2),
+              color: const Color(0xFF6C63FF).withValues(alpha: 0.2),
               blurRadius: 30,
               spreadRadius: 5,
               offset: const Offset(0, 10),
@@ -376,11 +408,11 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6C63FF).withOpacity(0.95),
+                        color: const Color(0xFF6C63FF).withValues(alpha: 0.95),
                         borderRadius: BorderRadius.circular(25),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
+                            color: Colors.black.withValues(alpha: 0.2),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),
@@ -419,7 +451,7 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
                         borderRadius: BorderRadius.circular(25),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF4CAF50).withOpacity(0.5),
+                            color: const Color(0xFF4CAF50).withValues(alpha: 0.5),
                             blurRadius: 15,
                             offset: const Offset(0, 5),
                           ),
@@ -527,7 +559,7 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
             borderRadius: BorderRadius.circular(25),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.black.withValues(alpha: 0.15),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),

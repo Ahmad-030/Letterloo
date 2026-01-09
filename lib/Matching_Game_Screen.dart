@@ -34,6 +34,7 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
   late AnimationController _successController;
   late AnimationController _pulseController;
   bool showingFeedback = false;
+  bool isMuted = false;
   final AudioPlayer _audioPlayer = AudioPlayer();
 
   @override
@@ -73,6 +74,7 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
   }
 
   void _playSound(bool success) async {
+    if (isMuted) return;
     try {
       if (success) {
         await _audioPlayer.play(AssetSource('audio/success.mp3'));
@@ -347,7 +349,24 @@ class _MatchingGameScreenState extends State<MatchingGameScreen> with TickerProv
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(width: 48),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: IconButton(
+              icon: Icon(
+                isMuted ? Icons.volume_off : Icons.volume_up,
+                color: Colors.white,
+                size: 24,
+              ),
+              onPressed: () {
+                setState(() {
+                  isMuted = !isMuted;
+                });
+              },
+            ),
+          ),
         ],
       ),
     );

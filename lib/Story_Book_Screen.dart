@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
+import 'package:audioplayers/audioplayers.dart';
 
 class StorybookScreen extends StatefulWidget {
   const StorybookScreen({Key? key}) : super(key: key);
@@ -13,6 +14,8 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
   late AnimationController _pageController;
   late AnimationController _sparkleController;
   late Animation<double> _pageAnimation;
+  late AudioPlayer _audioPlayer;
+  bool isMuted = false;
 
   final List<Map<String, String>> pages = [
     {'letter': 'A', 'emoji': '🍎', 'name': 'Apple', 'description': 'A is for Apple!\nCrunchy and sweet!'},
@@ -46,6 +49,8 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
   @override
   void initState() {
     super.initState();
+    _audioPlayer = AudioPlayer();
+
     _pageController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
@@ -67,11 +72,31 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
   void dispose() {
     _pageController.dispose();
     _sparkleController.dispose();
+    _audioPlayer.dispose();
     super.dispose();
+  }
+
+  Future<void> _playSwipeSound() async {
+    if (isMuted) return;
+
+    try {
+      await _audioPlayer.stop(); // Stop any currently playing sound
+      await _audioPlayer.play(AssetSource('audio/swipe.mp3'));
+    } catch (e) {
+      // If sound file is not found or there's an error, continue without sound
+      debugPrint('Error playing sound: $e');
+    }
+  }
+
+  void _toggleMute() {
+    setState(() {
+      isMuted = !isMuted;
+    });
   }
 
   void _nextPage() {
     if (currentPage < pages.length - 1) {
+      _playSwipeSound(); // Play sound when moving to next page
       setState(() {
         currentPage++;
         _pageController.forward(from: 0);
@@ -81,6 +106,7 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
 
   void _previousPage() {
     if (currentPage > 0) {
+      _playSwipeSound(); // Play sound when moving to previous page
       setState(() {
         currentPage--;
         _pageController.forward(from: 0);
@@ -113,6 +139,7 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
               Expanded(
                 child: _buildStoryPage(),
               ),
+              const SizedBox(height: 25),
               _buildNavigationButtons(),
               const SizedBox(height: 20),
             ],
@@ -142,7 +169,14 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(width: 48),
+          IconButton(
+            icon: Icon(
+              isMuted ? Icons.volume_off : Icons.volume_up,
+              color: Colors.white,
+              size: 30,
+            ),
+            onPressed: _toggleMute,
+          ),
         ],
       ),
     );
@@ -156,7 +190,7 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 10,
             spreadRadius: 2,
           ),
@@ -179,9 +213,9 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
     return GestureDetector(
       onHorizontalDragEnd: (details) {
         if (details.primaryVelocity! < 0) {
-          _nextPage();
+          _nextPage(); // Sound will play from _nextPage method
         } else if (details.primaryVelocity! > 0) {
-          _previousPage();
+          _previousPage(); // Sound will play from _previousPage method
         }
       },
       child: AnimatedBuilder(
@@ -200,19 +234,19 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
         },
         child: Container(
           margin: const EdgeInsets.symmetric(horizontal: 30),
-          padding: const EdgeInsets.all(20), // FIXED: Reduced padding
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(40),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 30,
                 spreadRadius: 5,
               ),
             ],
           ),
-          child: SingleChildScrollView( // FIXED: Added scrolling
+          child: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -225,7 +259,7 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
                     );
                   },
                   child: Container(
-                    padding: const EdgeInsets.all(25), // FIXED: Reduced padding
+                    padding: const EdgeInsets.all(25),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
@@ -239,7 +273,7 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.purple.withOpacity(0.3),
+                          color: Colors.purple.withValues(alpha: 0.3),
                           blurRadius: 20,
                           spreadRadius: 5,
                         ),
@@ -248,7 +282,7 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
                     child: Text(
                       page['letter']!,
                       style: const TextStyle(
-                        fontSize: 80, // FIXED: Reduced size
+                        fontSize: 80,
                         fontWeight: FontWeight.bold,
                         color: Colors.deepPurple,
                       ),
@@ -258,13 +292,13 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
                 const SizedBox(height: 20),
                 Text(
                   page['emoji']!,
-                  style: const TextStyle(fontSize: 70), // FIXED: Reduced size
+                  style: const TextStyle(fontSize: 70),
                 ),
                 const SizedBox(height: 15),
                 Text(
                   page['name']!,
                   style: const TextStyle(
-                    fontSize: 28, // FIXED: Reduced size
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
                     color: Colors.deepPurple,
                   ),
@@ -279,7 +313,7 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
                   child: Text(
                     page['description']!,
                     style: const TextStyle(
-                      fontSize: 18, // FIXED: Reduced size
+                      fontSize: 18,
                       color: Colors.black87,
                       height: 1.5,
                     ),
@@ -290,7 +324,7 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
                 const Text(
                   '⬅️ Swipe to turn pages ➡️',
                   style: TextStyle(
-                    fontSize: 14, // FIXED: Reduced size
+                    fontSize: 14,
                     color: Colors.grey,
                     fontStyle: FontStyle.italic,
                   ),
@@ -341,14 +375,14 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
       label: Text(
         text,
         style: const TextStyle(
-          fontSize: 16, // FIXED: Reduced size
+          fontSize: 16,
           fontWeight: FontWeight.bold,
           color: Colors.white,
         ),
       ),
       style: ElevatedButton.styleFrom(
         backgroundColor: enabled ? color : Colors.grey,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12), // FIXED: Reduced padding
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(25),
         ),

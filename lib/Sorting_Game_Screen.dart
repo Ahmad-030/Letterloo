@@ -18,6 +18,7 @@ class _SortingGameScreenState extends State<SortingGameScreen> with TickerProvid
   int level = 1;
   int score = 0;
   final AudioPlayer _audioPlayer = AudioPlayer();
+  bool isMuted = false;
 
   @override
   void initState() {
@@ -50,6 +51,8 @@ class _SortingGameScreenState extends State<SortingGameScreen> with TickerProvid
   }
 
   void _playSound(bool success) async {
+    if (isMuted) return;
+
     try {
       if (success) {
         await _audioPlayer.play(AssetSource('audio/success.mp3'));
@@ -57,8 +60,14 @@ class _SortingGameScreenState extends State<SortingGameScreen> with TickerProvid
         await _audioPlayer.play(AssetSource('audio/error.mp3'));
       }
     } catch (e) {
-      // Sound files not found
+      debugPrint('Error playing sound: $e');
     }
+  }
+
+  void _toggleMute() {
+    setState(() {
+      isMuted = !isMuted;
+    });
   }
 
   void _checkOrder() {
@@ -200,7 +209,7 @@ class _SortingGameScreenState extends State<SortingGameScreen> with TickerProvid
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white.withOpacity(0.3),
+                        backgroundColor: Colors.white.withValues(alpha: 0.3),
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15),
@@ -250,11 +259,11 @@ class _SortingGameScreenState extends State<SortingGameScreen> with TickerProvid
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 margin: const EdgeInsets.symmetric(horizontal: 40),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text(
-                  'Drag letters to arrange A → Z',
+                  'Drag letters to arrange\n A → Z',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -273,8 +282,9 @@ class _SortingGameScreenState extends State<SortingGameScreen> with TickerProvid
                   ],
                 ),
               ),
+              const SizedBox(height: 10),
               _buildActionButtons(),
-              const SizedBox(height: 20),
+              const SizedBox(height: 8),
             ],
           ),
         ),
@@ -289,7 +299,7 @@ class _SortingGameScreenState extends State<SortingGameScreen> with TickerProvid
         children: [
           Container(
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(15),
             ),
             child: IconButton(
@@ -299,7 +309,7 @@ class _SortingGameScreenState extends State<SortingGameScreen> with TickerProvid
           ),
           const Expanded(
             child: Text(
-              '🔤 Sorting Challenge',
+              'Sorting Challenge',
               style: TextStyle(
                 fontSize: 26,
                 fontWeight: FontWeight.bold,
@@ -308,7 +318,20 @@ class _SortingGameScreenState extends State<SortingGameScreen> with TickerProvid
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(width: 48),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: IconButton(
+              icon: Icon(
+                isMuted ? Icons.volume_off : Icons.volume_up,
+                color: Colors.white,
+                size: 24,
+              ),
+              onPressed: _toggleMute,
+            ),
+          ),
         ],
       ),
     );
@@ -323,7 +346,7 @@ class _SortingGameScreenState extends State<SortingGameScreen> with TickerProvid
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             spreadRadius: 2,
           ),
@@ -376,7 +399,7 @@ class _SortingGameScreenState extends State<SortingGameScreen> with TickerProvid
         margin: const EdgeInsets.symmetric(horizontal: 20),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
           borderRadius: BorderRadius.circular(20),
         ),
         child: const Text(
@@ -431,7 +454,7 @@ class _SortingGameScreenState extends State<SortingGameScreen> with TickerProvid
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isDragging ? 0.4 : 0.2),
+            color: Colors.black.withValues(alpha: isDragging ? 0.4 : 0.2),
             blurRadius: isDragging ? 20 : 10,
             spreadRadius: isDragging ? 5 : 2,
           ),
@@ -459,14 +482,14 @@ class _SortingGameScreenState extends State<SortingGameScreen> with TickerProvid
       },
       builder: (context, candidateData, rejectedData) {
         return Container(
-          margin: const EdgeInsets.symmetric(horizontal: 20),
+          margin: const EdgeInsets.symmetric(horizontal: 10,vertical: 0),
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(25),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: Colors.black.withValues(alpha: 0.1),
                 blurRadius: 15,
                 spreadRadius: 3,
               ),
@@ -560,7 +583,7 @@ class _SortingGameScreenState extends State<SortingGameScreen> with TickerProvid
                             borderRadius: BorderRadius.circular(15),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
+                                color: Colors.black.withValues(alpha: 0.2),
                                 blurRadius: 5,
                                 spreadRadius: 1,
                               ),

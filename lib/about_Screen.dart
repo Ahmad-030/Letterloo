@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'Privacy_Policy_Screen.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({Key? key}) : super(key: key);
@@ -8,7 +7,7 @@ class AboutScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -23,22 +22,97 @@ class AboutScreen extends StatelessWidget {
             children: [
               _buildHeader(context),
               Expanded(
-                child: SingleChildScrollView(
-                  physics: BouncingScrollPhysics(),
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      _buildAppInfoCard(),
-                      const SizedBox(height: 20),
-                      _buildMissionCard(),
-                      const SizedBox(height: 20),
-                      _buildFeaturesCard(),
-                      const SizedBox(height: 20),
-                      _buildDevelopersCard(),
-                      const SizedBox(height: 20),
-                      _buildContactCard(),
-                      const SizedBox(height: 30),
+                child: Container(
+                  margin: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(25),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(25),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
                     ],
+                  ),
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                            ),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.school,
+                            size: 60,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        const Text(
+                          'LetterLoo',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF6C63FF),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF6C63FF).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Text(
+                            'Version 1.0.0',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF6C63FF),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        const Text(
+                          'Fun Learning for Young Minds',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF6C63FF),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 15),
+                        Text(
+                          'LetterLoo is an interactive educational application designed to help children aged 3-6 learn the alphabet through engaging games and activities. Our mission is to make early learning fun, accessible, and effective.',
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.grey.shade700,
+                            height: 1.6,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 30),
+                        const Divider(),
+                        const SizedBox(height: 20),
+                        _buildFeatureSection(),
+                        const SizedBox(height: 30),
+                        const Divider(),
+                        const SizedBox(height: 20),
+                        _buildContactSection(context),
+                        const SizedBox(height: 30),
+                        _buildDeveloperInfo(),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -60,7 +134,7 @@ class AboutScreen extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
             blurRadius: 15,
-            offset: Offset(0, 5),
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -72,9 +146,9 @@ class AboutScreen extends StatelessWidget {
           ),
           const Expanded(
             child: Text(
-              'About Us',
+              'ℹ️ About',
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Color(0xFF6C63FF),
                 letterSpacing: 0.5,
@@ -88,250 +162,81 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildAppInfoCard() {
-    return Container(
-      padding: const EdgeInsets.all(30),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: Offset(0, 10),
+  Widget _buildFeatureSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Features',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF6C63FF),
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Container(
-            padding: EdgeInsets.all(25),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-              ),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0xFF667eea).withOpacity(0.3),
-                  blurRadius: 20,
-                  offset: Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Icon(
-              Icons.school,
-              size: 60,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'ABC Fun Learning',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF6C63FF),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Color(0xFF6C63FF).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              'Version 1.0.0',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF6C63FF),
-              ),
-            ),
-          ),
-          const SizedBox(height: 15),
-          Text(
-            'Empowering Young Minds Through Interactive Learning',
-            style: TextStyle(
-              fontSize: 15,
-              color: Colors.grey.shade600,
-              fontStyle: FontStyle.italic,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 15),
+        _buildFeatureItem(
+          Icons.draw,
+          'Letter Tracing',
+          'Practice writing letters with guided tracing',
+          Color(0xFFFF6B6B),
+        ),
+        _buildFeatureItem(
+          Icons.extension,
+          'Matching Game',
+          'Match letters with corresponding objects',
+          Color(0xFF4CAF50),
+        ),
+        _buildFeatureItem(
+          Icons.sort_by_alpha,
+          'Sorting Challenge',
+          'Arrange letters in alphabetical order',
+          Color(0xFF2196F3),
+        ),
+        _buildFeatureItem(
+          Icons.menu_book,
+          'ABC Storybook',
+          'Learn letters through interactive stories',
+          Color(0xFF9C27B0),
+        ),
+      ],
     );
   }
 
-  Widget _buildMissionCard() {
-    return Container(
-      padding: const EdgeInsets.all(25),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Color(0xFFFF6B6B).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Icon(Icons.rocket_launch, color: Color(0xFFFF6B6B), size: 28),
-              ),
-              SizedBox(width: 15),
-              Expanded(
-                child: Text(
-                  'Our Mission',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF6C63FF),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 15),
-          Text(
-            'We are dedicated to transforming early childhood education through innovative, engaging, and interactive learning experiences. Our mission is to make learning the alphabet fun and memorable for children aged 3-6 years, building a strong foundation for lifelong literacy and learning success.',
-            style: TextStyle(
-              fontSize: 15,
-              color: Colors.grey.shade700,
-              height: 1.6,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeaturesCard() {
-    return Container(
-      padding: const EdgeInsets.all(25),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Color(0xFF4CAF50).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Icon(Icons.stars, color: Color(0xFF4CAF50), size: 28),
-              ),
-              SizedBox(width: 15),
-              Text(
-                'Key Features',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF6C63FF),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _buildFeatureItem(
-            Icons.draw,
-            'Interactive Letter Tracing',
-            'Advanced tracing system with real-time feedback and progress tracking',
-          ),
-          _buildFeatureItem(
-            Icons.extension,
-            'Engaging Matching Games',
-            'Connect letters with objects to build strong letter-sound associations',
-          ),
-          _buildFeatureItem(
-            Icons.sort_by_alpha,
-            'Alphabetical Sorting',
-            'Fun drag-and-drop activities to master letter sequences',
-          ),
-          _buildFeatureItem(
-            Icons.menu_book,
-            'Interactive Storybook',
-            'Explore the alphabet through captivating animal adventure stories',
-          ),
-          _buildFeatureItem(
-            Icons.child_care,
-            'Child-Friendly Design',
-            'Intuitive interface with colorful, age-appropriate visuals',
-          ),
-          _buildFeatureItem(
-            Icons.offline_bolt,
-            'Complete Offline Access',
-            'Learn anywhere, anytime without internet connectivity',
-          ),
-          _buildFeatureItem(
-            Icons.security,
-            'Privacy-First Approach',
-            'No data collection, no ads, completely safe for children',
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFeatureItem(IconData icon, String title, String description) {
+  Widget _buildFeatureItem(IconData icon, String title, String description, Color color) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 15),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            padding: EdgeInsets.all(8),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Color(0xFF6C63FF).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(10),
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: Color(0xFF6C63FF), size: 20),
+            child: Icon(icon, color: color, size: 24),
           ),
-          SizedBox(width: 15),
+          const SizedBox(width: 15),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: Color(0xFF6C63FF),
                   ),
                 ),
-                SizedBox(height: 4),
+                const SizedBox(height: 4),
                 Text(
                   description,
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey.shade600,
+                    height: 1.4,
                   ),
                 ),
               ],
@@ -342,187 +247,142 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDevelopersCard() {
-    return Container(
-      padding: const EdgeInsets.all(25),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: Offset(0, 10),
+  Widget _buildContactSection(BuildContext context) {
+    return Column(
+      children: [
+        const Text(
+          'Contact & Support',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF6C63FF),
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Row(
+        ),
+        const SizedBox(height: 20),
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFF6C63FF).withOpacity(0.1),
+                const Color(0xFF764ba2).withOpacity(0.1),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(
+              color: const Color(0xFF6C63FF).withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: Column(
             children: [
-              Container(
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Color(0xFFFF6B6B).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Icon(Icons.code, color: Color(0xFFFF6B6B), size: 28),
+              const Icon(
+                Icons.email_outlined,
+                size: 40,
+                color: Color(0xFF6C63FF),
               ),
-              SizedBox(width: 15),
-              Text(
-                'Development Team',
+              const SizedBox(height: 12),
+              const Text(
+                'We\'d love to hear from you!',
                 style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                   color: Color(0xFF6C63FF),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'For support, feedback, or inquiries:',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade700,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 15),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF6C63FF).withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+
+                    Icon(Icons.mail, color: Colors.white, size: 15),
+                    SizedBox(width: 10),
+                    Text(
+                      'Matthewstewartok22@gmail.com',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          CircleAvatar(
-            radius: 50,
-            backgroundColor: Color(0xFF6C63FF).withOpacity(0.2),
-            child: Icon(Icons.person, size: 60, color: Color(0xFF6C63FF)),
-          ),
-          SizedBox(height: 15),
-          Text(
-            'Your Name',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF6C63FF),
-            ),
-          ),
-          SizedBox(height: 5),
-          Text(
-            'Lead Developer & Designer',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-          ),
-          SizedBox(height: 5),
-          Text(
-            'Flutter & Mobile App Specialist',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.grey.shade600,
-            ),
-          ),
-          Divider(height: 30, thickness: 1),
-          Text(
-            'Passionate about creating educational technology that transforms learning into an engaging adventure. Committed to developing apps that make a positive impact on children\'s education worldwide.',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade700,
-              fontStyle: FontStyle.italic,
-              height: 1.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget _buildContactCard() {
+  Widget _buildDeveloperInfo() {
     return Container(
-      padding: const EdgeInsets.all(25),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 20,
-            offset: Offset(0, 10),
-          ),
-        ],
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(15),
       ),
       child: Column(
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Color(0xFF4CAF50).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Icon(Icons.contact_support, color: Color(0xFF4CAF50), size: 28),
-              ),
-              SizedBox(width: 15),
+              Icon(Icons.code, color: Colors.grey.shade600, size: 20),
+              const SizedBox(width: 8),
               Text(
-                'Contact & Support',
+                'Developed with ❤️',
                 style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF6C63FF),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade700,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          _buildContactItem(Icons.email, 'Email Support', 'support@abcfunlearning.com'),
-          _buildContactItem(Icons.language, 'Website', 'www.abcfunlearning.com'),
-          _buildContactItem(Icons.feedback, 'Feedback', 'feedback@abcfunlearning.com'),
-          const SizedBox(height: 20),
-          Divider(thickness: 1),
-          const SizedBox(height: 15),
+          const SizedBox(height: 12),
           Text(
-            'Made with ❤️ for young learners everywhere',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF6C63FF),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '© 2024 ABC Fun Learning. All rights reserved.',
+            '© 2025 LetterLoo. All rights reserved.',
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey.shade600,
             ),
             textAlign: TextAlign.center,
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContactItem(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        children: [
-          Icon(icon, color: Color(0xFF6C63FF), size: 20),
-          SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                ),
-              ],
+          const SizedBox(height: 8),
+          Text(
+            'Made for young learners everywhere',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade500,
+              fontStyle: FontStyle.italic,
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
