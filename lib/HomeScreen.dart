@@ -163,16 +163,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: EdgeInsets.all(isSmallScreen ? 8 : 12),
+            width: isSmallScreen ? 45 : 55,
+            height: isSmallScreen ? 45 : 55,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-              ),
-              borderRadius: BorderRadius.circular(15),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0xFF6C63FF).withOpacity(0.3),
+                  blurRadius: 8,
+                  spreadRadius: 1,
+                ),
+              ],
             ),
-            child: Text(
-              '🎓',
-              style: TextStyle(fontSize: isSmallScreen ? 24 : 32),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                'assets/icon.png',
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           SizedBox(width: size.width * 0.03),

@@ -98,9 +98,9 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
               ScaleTransition(
                 scale: _scaleAnimation,
                 child: Container(
-                  padding: const EdgeInsets.all(50),
+                  width: 280,
+                  height: 280,
                   decoration: BoxDecoration(
-                    color: Colors.white,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
@@ -110,10 +110,11 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                       ),
                     ],
                   ),
-                  child: Icon(
-                    Icons.school,
-                    size: 100,
-                    color: Color(0xFF6C63FF),
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/icon.png', // Make sure to add your logo to assets folder
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
               ),
