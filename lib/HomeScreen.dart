@@ -45,6 +45,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isSmallScreen = size.width < 360;
+    final padding = size.width * 0.05;
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -61,18 +65,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: SafeArea(
           child: Column(
             children: [
-              const SizedBox(height: 30),
-              _buildHeader(),
-              const SizedBox(height: 15),
-              _buildSubtitle(),
-              const SizedBox(height: 30),
+              SizedBox(height: size.height * 0.02),
+              _buildHeader(context),
+              SizedBox(height: size.height * 0.01),
+              _buildSubtitle(context),
+              SizedBox(height: size.height * 0.02),
               Expanded(
                 child: GridView.count(
                   crossAxisCount: 2,
-                  padding: const EdgeInsets.all(25),
-                  mainAxisSpacing: 20,
-                  crossAxisSpacing: 20,
-                  childAspectRatio: 0.6,
+                  padding: EdgeInsets.all(padding),
+                  mainAxisSpacing: padding,
+                  crossAxisSpacing: padding,
+                  childAspectRatio: isSmallScreen ? 0.75 : 0.7,
                   physics: BouncingScrollPhysics(),
                   children: [
                     _buildGameCard(
@@ -137,13 +141,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isSmallScreen = size.width < 360;
+
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 25),
-      padding: const EdgeInsets.all(25),
+      margin: EdgeInsets.symmetric(horizontal: size.width * 0.05),
+      padding: EdgeInsets.all(size.width * 0.04),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.95),
-        borderRadius: BorderRadius.circular(25),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
@@ -156,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: EdgeInsets.all(12),
+            padding: EdgeInsets.all(isSmallScreen ? 8 : 12),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [Color(0xFF667eea), Color(0xFF764ba2)],
@@ -165,42 +172,56 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
             child: Text(
               '🎓',
-              style: TextStyle(fontSize: 32),
+              style: TextStyle(fontSize: isSmallScreen ? 24 : 32),
             ),
           ),
-          SizedBox(width: 15),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'LetterLoo',
-                style: TextStyle(
-                  fontSize: 26,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF6C63FF),
-                  letterSpacing: 0.5,
+          SizedBox(width: size.width * 0.03),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'LetterLoo',
+                    style: TextStyle(
+                      fontSize: isSmallScreen ? 20 : 26,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF6C63FF),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
                 ),
-              ),
-              Text(
-                'Learn • Play • Grow',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade600,
-                  letterSpacing: 1,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'Learn • Play • Grow',
+                    style: TextStyle(
+                      fontSize: isSmallScreen ? 10 : 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey.shade600,
+                      letterSpacing: 1,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSubtitle() {
+  Widget _buildSubtitle(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isSmallScreen = size.width < 360;
+
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 40),
-      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+      margin: EdgeInsets.symmetric(horizontal: size.width * 0.08),
+      padding: EdgeInsets.symmetric(
+        horizontal: size.width * 0.04,
+        vertical: size.height * 0.015,
+      ),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.95),
         borderRadius: BorderRadius.circular(20),
@@ -215,14 +236,23 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.touch_app, color: Color(0xFF6C63FF), size: 22),
-          SizedBox(width: 10),
-          Text(
-            'Choose Your Activity',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF6C63FF),
+          Icon(
+            Icons.touch_app,
+            color: Color(0xFF6C63FF),
+            size: isSmallScreen ? 18 : 22,
+          ),
+          SizedBox(width: size.width * 0.02),
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                'Choose Your Activity',
+                style: TextStyle(
+                  fontSize: isSmallScreen ? 14 : 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF6C63FF),
+                ),
+              ),
             ),
           ),
         ],
@@ -238,6 +268,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       int index,
       VoidCallback onTap,
       ) {
+    final size = MediaQuery.of(context).size;
+    final isSmallScreen = size.width < 360;
+
     return ScaleTransition(
       scale: _animations[index],
       child: GestureDetector(
@@ -249,7 +282,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               end: Alignment.bottomRight,
               colors: colors,
             ),
-            borderRadius: BorderRadius.circular(25),
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
                 color: colors[0].withOpacity(0.4),
@@ -263,38 +296,47 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             color: Colors.transparent,
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(25),
+              borderRadius: BorderRadius.circular(20),
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(size.width * 0.03),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      padding: EdgeInsets.all(20),
+                      padding: EdgeInsets.all(isSmallScreen ? 12 : 16),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.3),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         icon,
-                        size: 50,
+                        size: isSmallScreen ? 35 : 45,
                         color: Colors.white,
                       ),
                     ),
-                    const SizedBox(height: 15),
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 0.5,
+                    SizedBox(height: size.height * 0.01),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          title,
+                          style: TextStyle(
+                            fontSize: isSmallScreen ? 14 : 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                        ),
                       ),
-                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: size.height * 0.005),
                     Container(
-                      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: size.width * 0.02,
+                        vertical: size.height * 0.005,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withOpacity(0.3),
                         borderRadius: BorderRadius.circular(15),
@@ -302,12 +344,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.play_arrow, color: Colors.white, size: 16),
+                          Icon(
+                            Icons.play_arrow,
+                            color: Colors.white,
+                            size: isSmallScreen ? 14 : 16,
+                          ),
                           SizedBox(width: 4),
                           Text(
                             'Play',
                             style: TextStyle(
-                              fontSize: 12,
+                              fontSize: isSmallScreen ? 10 : 12,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
