@@ -80,11 +80,21 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
     if (isMuted) return;
 
     try {
-      await _audioPlayer.stop(); // Stop any currently playing sound
+      await _audioPlayer.stop();
       await _audioPlayer.play(AssetSource('audio/swipe.mp3'));
     } catch (e) {
-      // If sound file is not found or there's an error, continue without sound
       debugPrint('Error playing sound: $e');
+    }
+  }
+
+  Future<void> _playSuccessSound() async {
+    if (isMuted) return;
+
+    try {
+      await _audioPlayer.stop();
+      await _audioPlayer.play(AssetSource('audio/success.mp3'));
+    } catch (e) {
+      debugPrint('Error playing success sound: $e');
     }
   }
 
@@ -96,7 +106,7 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
 
   void _nextPage() {
     if (currentPage < pages.length - 1) {
-      _playSwipeSound(); // Play sound when moving to next page
+      _playSwipeSound();
       setState(() {
         currentPage++;
         _pageController.forward(from: 0);
@@ -106,12 +116,133 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
 
   void _previousPage() {
     if (currentPage > 0) {
-      _playSwipeSound(); // Play sound when moving to previous page
+      _playSwipeSound();
       setState(() {
         currentPage--;
         _pageController.forward(from: 0);
       });
     }
+  }
+
+  void _showCompletionDialog() {
+    _playSuccessSound();
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(30),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.purple.shade200,
+                  Colors.pink.shade200,
+                  Colors.orange.shade200,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  '🎉',
+                  style: TextStyle(fontSize: 80),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  'Congratulations!',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 15),
+                Container(
+                  padding: const EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: const Text(
+                    'You have completed the ABC Storybook!',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(height: 25),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          currentPage = 0;
+                          _pageController.forward(from: 0);
+                        });
+                        Navigator.of(context).pop();
+                      },
+                      icon: const Icon(Icons.replay, color: Colors.deepPurple),
+                      label: const Text(
+                        'Restart',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 15,),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).pop();
+                      },
+                      icon: const Icon(Icons.home, color: Colors.deepPurple),
+                      label: const Text(
+                        'Home',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -213,9 +344,9 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
     return GestureDetector(
       onHorizontalDragEnd: (details) {
         if (details.primaryVelocity! < 0) {
-          _nextPage(); // Sound will play from _nextPage method
+          _nextPage();
         } else if (details.primaryVelocity! > 0) {
-          _previousPage(); // Sound will play from _previousPage method
+          _previousPage();
         }
       },
       child: AnimatedBuilder(
@@ -338,6 +469,8 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
   }
 
   Widget _buildNavigationButtons() {
+    bool isLastPage = currentPage == pages.length - 1;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40),
       child: Row(
@@ -350,7 +483,15 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
             _previousPage,
             Colors.blue,
           ),
-          _buildNavButton(
+          isLastPage
+              ? _buildNavButton(
+            Icons.check_circle,
+            'Finish',
+            true,
+            _showCompletionDialog,
+            Colors.purple,
+          )
+              : _buildNavButton(
             Icons.arrow_forward,
             'Next',
             currentPage < pages.length - 1,
