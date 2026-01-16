@@ -3,6 +3,7 @@ import 'Matching_Game_Screen.dart';
 import 'Sorting_Game_Screen.dart';
 import 'Story_Book_Screen.dart';
 import 'letter_tracing_Screen.dart';
+import 'get_started_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -43,98 +44,110 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  // Handle back button press
+  Future<bool> _onWillPop() async {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const GetStartedScreen()),
+    );
+    return false; // Prevent default back behavior
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isSmallScreen = size.width < 360;
     final padding = size.width * 0.05;
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF667eea),
-              Color(0xFF764ba2),
-              Color(0xFFF093FB),
-            ],
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF667eea),
+                Color(0xFF764ba2),
+                Color(0xFFF093FB),
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              SizedBox(height: size.height * 0.02),
-              _buildHeader(context),
-              SizedBox(height: size.height * 0.01),
-              _buildSubtitle(context),
-              SizedBox(height: size.height * 0.02),
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 2,
-                  padding: EdgeInsets.all(padding),
-                  mainAxisSpacing: padding,
-                  crossAxisSpacing: padding,
-                  childAspectRatio: isSmallScreen ? 0.75 : 0.7,
-                  physics: BouncingScrollPhysics(),
-                  children: [
-                    _buildGameCard(
-                      context,
-                      'Trace Letters',
-                      Icons.draw,
-                      [Color(0xFFFF6B6B), Color(0xFFFFE66D)],
-                      0,
-                          () => Navigator.push(
+          child: SafeArea(
+            child: Column(
+              children: [
+                SizedBox(height: size.height * 0.02),
+                _buildHeader(context),
+                SizedBox(height: size.height * 0.01),
+                _buildSubtitle(context),
+                SizedBox(height: size.height * 0.02),
+                Expanded(
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    padding: EdgeInsets.all(padding),
+                    mainAxisSpacing: padding,
+                    crossAxisSpacing: padding,
+                    childAspectRatio: isSmallScreen ? 0.75 : 0.7,
+                    physics: BouncingScrollPhysics(),
+                    children: [
+                      _buildGameCard(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const LetterTracingScreen(),
+                        'Trace Letters',
+                        Icons.draw,
+                        [Color(0xFFFF6B6B), Color(0xFFFFE66D)],
+                        0,
+                            () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LetterTracingScreen(),
+                          ),
                         ),
                       ),
-                    ),
-                    _buildGameCard(
-                      context,
-                      'Matching Game',
-                      Icons.extension,
-                      [Color(0xFF4CAF50), Color(0xFF81C784)],
-                      1,
-                          () => Navigator.push(
+                      _buildGameCard(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const MatchingGameScreen(),
+                        'Matching Game',
+                        Icons.extension,
+                        [Color(0xFF4CAF50), Color(0xFF81C784)],
+                        1,
+                            () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const MatchingGameScreen(),
+                          ),
                         ),
                       ),
-                    ),
-                    _buildGameCard(
-                      context,
-                      'Sorting Game',
-                      Icons.sort_by_alpha,
-                      [Color(0xFF2196F3), Color(0xFF64B5F6)],
-                      2,
-                          () => Navigator.push(
+                      _buildGameCard(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const SortingGameScreen(),
+                        'Sorting Game',
+                        Icons.sort_by_alpha,
+                        [Color(0xFF2196F3), Color(0xFF64B5F6)],
+                        2,
+                            () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SortingGameScreen(),
+                          ),
                         ),
                       ),
-                    ),
-                    _buildGameCard(
-                      context,
-                      'Storybook',
-                      Icons.menu_book,
-                      [Color(0xFF9C27B0), Color(0xFFBA68C8)],
-                      3,
-                          () => Navigator.push(
+                      _buildGameCard(
                         context,
-                        MaterialPageRoute(
-                          builder: (context) => const StorybookScreen(),
+                        'Storybook',
+                        Icons.menu_book,
+                        [Color(0xFF9C27B0), Color(0xFFBA68C8)],
+                        3,
+                            () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const StorybookScreen(),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

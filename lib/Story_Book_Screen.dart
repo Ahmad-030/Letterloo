@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:audioplayers/audioplayers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class StorybookScreen extends StatefulWidget {
   const StorybookScreen({Key? key}) : super(key: key);
@@ -16,6 +17,7 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
   late Animation<double> _pageAnimation;
   late AudioPlayer _audioPlayer;
   bool isMuted = false;
+  bool isLoading = true;
 
   final List<Map<String, String>> pages = [
     {'letter': 'A', 'emoji': '🍎', 'name': 'Apple', 'description': 'A is for Apple!\nCrunchy and sweet!'},
@@ -65,11 +67,37 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
       curve: Curves.easeInOut,
     );
 
+    _loadProgress();
+  }
+
+  Future<void> _loadProgress() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      currentPage = prefs.getInt('storybook_current_page') ?? 0;
+      isMuted = prefs.getBool('storybook_muted') ?? false;
+      isLoading = false;
+    });
     _pageController.forward();
+  }
+
+  Future<void> _saveProgress() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('storybook_current_page', currentPage);
+    await prefs.setBool('storybook_muted', isMuted);
+  }
+
+  Future<void> _resetProgress() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('storybook_current_page', 0);
+    setState(() {
+      currentPage = 0;
+      _pageController.forward(from: 0);
+    });
   }
 
   @override
   void dispose() {
+    _saveProgress();
     _pageController.dispose();
     _sparkleController.dispose();
     _audioPlayer.dispose();
@@ -102,6 +130,150 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
     setState(() {
       isMuted = !isMuted;
     });
+    _saveProgress();
+  }
+
+  void _showSettingsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(30),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.purple.shade200,
+                      Colors.pink.shade200,
+                      Colors.orange.shade200,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      '⚙️',
+                      style: TextStyle(fontSize: 60),
+                    ),
+                    const SizedBox(height: 15),
+                    const Text(
+                      'Settings',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 25),
+                    // Sound Toggle
+                    Container(
+                      padding: const EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.3),
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                isMuted ? Icons.volume_off : Icons.volume_up,
+                                color: Colors.white,
+                                size: 28,
+                              ),
+                              const SizedBox(width: 12),
+                              const Text(
+                                'Sound',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Switch(
+                            value: !isMuted,
+                            onChanged: (value) {
+                              setState(() {
+                                isMuted = !value;
+                              });
+                              setDialogState(() {});
+                              _saveProgress();
+                            },
+                            activeColor: Colors.green,
+                            activeTrackColor: Colors.green.shade200,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    // Start from Page 1
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        _resetProgress();
+                      },
+                      icon: const Icon(Icons.first_page, color: Colors.deepPurple),
+                      label: const Text(
+                        'Start from Page 1',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        minimumSize: const Size(double.infinity, 50),
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    // Close Button
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      label: const Text(
+                        'Close',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.deepPurple.withValues(alpha: 0.7),
+                        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        minimumSize: const Size(double.infinity, 50),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   void _nextPage() {
@@ -111,6 +283,7 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
         currentPage++;
         _pageController.forward(from: 0);
       });
+      _saveProgress();
     }
   }
 
@@ -121,6 +294,7 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
         currentPage--;
         _pageController.forward(from: 0);
       });
+      _saveProgress();
     }
   }
 
@@ -189,11 +363,8 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
                   children: [
                     ElevatedButton.icon(
                       onPressed: () {
-                        setState(() {
-                          currentPage = 0;
-                          _pageController.forward(from: 0);
-                        });
                         Navigator.of(context).pop();
+                        _resetProgress();
                       },
                       icon: const Icon(Icons.replay, color: Colors.deepPurple),
                       label: const Text(
@@ -212,7 +383,7 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
                         ),
                       ),
                     ),
-                    SizedBox(width: 15,),
+                    const SizedBox(width: 15),
                     ElevatedButton.icon(
                       onPressed: () {
                         Navigator.of(context).pop();
@@ -247,6 +418,29 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return Scaffold(
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.purple.shade200,
+                Colors.pink.shade200,
+                Colors.orange.shade200,
+              ],
+            ),
+          ),
+          child: const Center(
+            child: CircularProgressIndicator(
+              color: Colors.white,
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -301,12 +495,12 @@ class _StorybookScreenState extends State<StorybookScreen> with TickerProviderSt
             ),
           ),
           IconButton(
-            icon: Icon(
-              isMuted ? Icons.volume_off : Icons.volume_up,
+            icon: const Icon(
+              Icons.pause_circle,
               color: Colors.white,
               size: 30,
             ),
-            onPressed: _toggleMute,
+            onPressed: _showSettingsDialog,
           ),
         ],
       ),

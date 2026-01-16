@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'HomeScreen.dart';
 import 'about_Screen.dart';
 import 'Privacy_Policy_Screen.dart';
@@ -48,188 +49,314 @@ class _GetStartedScreenState extends State<GetStartedScreen> with TickerProvider
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFFFF9A9E),
-              Color(0xFFFAD0C4),
-              Color(0xFFFBC2EB),
-              Color(0xFFA18CD1),
+  // Handle back button press with exit confirmation dialog
+  Future<bool> _onWillPop() async {
+    return await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(25),
+        ),
+        child: Container(
+          padding: const EdgeInsets.all(25),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF667eea),
+                Color(0xFF764ba2),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(25),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.exit_to_app,
+                  size: 50,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Exit LetterLoo?',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(15),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: const Text(
+                  'Are you sure you want to leave?\nYour learning adventure is waiting! 🎮',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.white,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 25),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      icon: const Icon(Icons.close, color: Color(0xFF6C63FF)),
+                      label: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF6C63FF),
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        elevation: 0,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        SystemNavigator.pop(); // Exit the app
+                      },
+                      icon: const Icon(Icons.check, color: Colors.white),
+                      label: const Text(
+                        'Exit',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red.shade400,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        elevation: 0,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ],
           ),
         ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 40),
-                    ScaleTransition(
-                      scale: _scaleAnimation,
-                      child: AnimatedBuilder(
-                        animation: _floatingAnimation,
-                        builder: (context, child) {
-                          return Transform.translate(
-                            offset: Offset(0, _floatingAnimation.value),
-                            child: child,
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(30),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(40),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 30,
-                                spreadRadius: 5,
-                                offset: Offset(0, 15),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                width: 120,
-                                height: 120,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Color(0xFF6C63FF).withOpacity(0.3),
-                                      blurRadius: 15,
-                                      spreadRadius: 2,
+      ),
+    ) ?? false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFFF9A9E),
+                Color(0xFFFAD0C4),
+                Color(0xFFFBC2EB),
+                Color(0xFFA18CD1),
+              ],
+            ),
+          ),
+          child: SafeArea(
+            child: SingleChildScrollView(
+              physics: BouncingScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 40),
+                      ScaleTransition(
+                        scale: _scaleAnimation,
+                        child: AnimatedBuilder(
+                          animation: _floatingAnimation,
+                          builder: (context, child) {
+                            return Transform.translate(
+                              offset: Offset(0, _floatingAnimation.value),
+                              child: child,
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(30),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(40),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 30,
+                                  spreadRadius: 5,
+                                  offset: Offset(0, 15),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 120,
+                                  height: 120,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(20),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Color(0xFF6C63FF).withOpacity(0.3),
+                                        blurRadius: 15,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: Image.asset(
+                                      'assets/icon.png',
+                                      fit: BoxFit.cover,
                                     ),
-                                  ],
-                                ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(20),
-                                  child: Image.asset(
-                                    'assets/icon.png',
-                                    fit: BoxFit.cover,
                                   ),
                                 ),
-                              ),
-                              const SizedBox(height: 20),
-                              Text(
-                                'ABC Fun Learning',
-                                style: TextStyle(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF6C63FF),
-                                  letterSpacing: 0.5,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 8),
-                              Container(
-                                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: Color(0xFF6C63FF).withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  'Version 1.0.0',
+                                const SizedBox(height: 20),
+                                Text(
+                                  'ABC Fun Learning',
                                   style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold,
                                     color: Color(0xFF6C63FF),
+                                    letterSpacing: 0.5,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 8),
+                                Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFF6C63FF).withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Text(
+                                    'Version 1.0.0',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF6C63FF),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 40),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 18),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.95),
-                        borderRadius: BorderRadius.circular(25),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 20,
-                            offset: Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _buildFeatureIcon(Icons.draw, Color(0xFFFF6B6B)),
-                              SizedBox(width: 12),
-                              _buildFeatureIcon(Icons.extension, Color(0xFF4CAF50)),
-                              SizedBox(width: 12),
-                              _buildFeatureIcon(Icons.menu_book, Color(0xFF2196F3)),
-                            ],
-                          ),
-                          SizedBox(height: 12),
-                          Text(
-                            'Learn letters through\ninteractive games!',
-                            style: TextStyle(
-                              fontSize: 17,
-                              color: Color(0xFF6C63FF),
-                              fontWeight: FontWeight.bold,
-                              height: 1.3,
+                      const SizedBox(height: 40),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 18),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.95),
+                          borderRadius: BorderRadius.circular(25),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 20,
+                              offset: Offset(0, 10),
                             ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _buildFeatureIcon(Icons.draw, Color(0xFFFF6B6B)),
+                                SizedBox(width: 12),
+                                _buildFeatureIcon(Icons.extension, Color(0xFF4CAF50)),
+                                SizedBox(width: 12),
+                                _buildFeatureIcon(Icons.menu_book, Color(0xFF2196F3)),
+                              ],
+                            ),
+                            SizedBox(height: 12),
+                            Text(
+                              'Learn letters through\ninteractive games!',
+                              style: TextStyle(
+                                fontSize: 17,
+                                color: Color(0xFF6C63FF),
+                                fontWeight: FontWeight.bold,
+                                height: 1.3,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 50),
-                    _buildButton(
-                      'Get Started',
-                      Icons.rocket_launch,
-                      [Color(0xFF4CAF50), Color(0xFF81C784)],
-                          () => Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(builder: (context) => const HomeScreen()),
+                      const SizedBox(height: 50),
+                      _buildButton(
+                        'Get Started',
+                        Icons.rocket_launch,
+                        [Color(0xFF4CAF50), Color(0xFF81C784)],
+                            () => Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const HomeScreen()),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 15),
-                    _buildButton(
-                      'About',
-                      Icons.info_outline,
-                      [Color(0xFF6C63FF), Color(0xFF9575CD)],
-                          () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const AboutScreen()),
+                      const SizedBox(height: 15),
+                      _buildButton(
+                        'About',
+                        Icons.info_outline,
+                        [Color(0xFF6C63FF), Color(0xFF9575CD)],
+                            () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const AboutScreen()),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 15),
-                    _buildButton(
-                      'Privacy Policy',
-                      Icons.shield,
-                      [Color(0xFFFFA726), Color(0xFFFF7043)],
-                          () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
+                      const SizedBox(height: 15),
+                      _buildButton(
+                        'Privacy Policy',
+                        Icons.shield,
+                        [Color(0xFFFFA726), Color(0xFFFF7043)],
+                            () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 40),
-                  ],
+                      const SizedBox(height: 40),
+                    ],
+                  ),
                 ),
               ),
             ),

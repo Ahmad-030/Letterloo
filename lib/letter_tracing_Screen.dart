@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 import 'package:audioplayers/audioplayers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LetterTracingScreen extends StatefulWidget {
   const LetterTracingScreen({Key? key}) : super(key: key);
@@ -10,13 +11,20 @@ class LetterTracingScreen extends StatefulWidget {
 }
 
 class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerProviderStateMixin {
+  final GlobalKey _traceKey = GlobalKey();
+
   int currentLetterIndex = 0;
   final List<String> letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-  List<Offset> drawnPoints = [];
+
+  // Path-based state with proper coverage tracking
+  Path letterPath = Path();
+  List<PathSegment> pathSegments = [];
+  Map<int, Set<int>> segmentCoverage = {}; // segment -> covered point indices
+
+  double traceProgress = 0.0;
   bool isTraced = false;
-  double tracingProgress = 0.0;
+
   late AnimationController _celebrationController;
-  late AnimationController _hintController;
   List<Offset> stars = [];
   late AudioPlayer _audioPlayer;
   bool isMuted = false;
@@ -30,23 +38,364 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    _hintController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    )..repeat(reverse: true);
+
+    _loadProgress();
+  }
+
+  // Load saved progress
+  Future<void> _loadProgress() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedIndex = prefs.getInt('currentLetterIndex') ?? 0;
+
+      setState(() {
+        currentLetterIndex = savedIndex;
+        _initializeLetterPath();
+      });
+    } catch (e) {
+      debugPrint('Error loading progress: $e');
+      _initializeLetterPath();
+    }
+  }
+
+  // Save progress
+  Future<void> _saveProgress() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('currentLetterIndex', currentLetterIndex);
+    } catch (e) {
+      debugPrint('Error saving progress: $e');
+    }
+  }
+
+  // Clear progress (when restarting)
+  Future<void> _clearProgress() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('currentLetterIndex');
+    } catch (e) {
+      debugPrint('Error clearing progress: $e');
+    }
+  }
+
+  void _initializeLetterPath() {
+    const size = Size(320, 380);
+    letterPath = _getLetterPath(letters[currentLetterIndex], size);
+    pathSegments = _extractPathSegments(letterPath);
+
+    // Initialize coverage map
+    segmentCoverage.clear();
+    for (int i = 0; i < pathSegments.length; i++) {
+      segmentCoverage[i] = {};
+    }
+
+    traceProgress = 0.0;
+    isTraced = false;
+  }
+
+  // Extract individual segments from path with optimized sampling
+  List<PathSegment> _extractPathSegments(Path path) {
+    List<PathSegment> segments = [];
+
+    for (final metric in path.computeMetrics()) {
+      List<Offset> points = [];
+      // Optimized: sample every 8 pixels instead of 6 for better performance
+      for (double i = 0; i < metric.length; i += 8) {
+        final pos = metric.getTangentForOffset(i);
+        if (pos != null) points.add(pos.position);
+      }
+      if (points.isNotEmpty) {
+        segments.add(PathSegment(points: points));
+      }
+    }
+
+    return segments;
+  }
+
+  Path _getLetterPath(String letter, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final path = Path();
+
+    switch (letter) {
+      case 'A':
+      // Left stroke
+        path.moveTo(w * 0.5, h * 0.15);
+        path.lineTo(w * 0.2, h * 0.85);
+        // Right stroke
+        path.moveTo(w * 0.5, h * 0.15);
+        path.lineTo(w * 0.8, h * 0.85);
+        // Horizontal bar
+        path.moveTo(w * 0.32, h * 0.55);
+        path.lineTo(w * 0.68, h * 0.55);
+        break;
+
+      case 'B':
+      // Vertical line
+        path.moveTo(w * 0.25, h * 0.15);
+        path.lineTo(w * 0.25, h * 0.85);
+        // Top bump
+        path.moveTo(w * 0.25, h * 0.15);
+        path.quadraticBezierTo(w * 0.65, h * 0.15, w * 0.65, h * 0.35);
+        path.quadraticBezierTo(w * 0.65, h * 0.5, w * 0.25, h * 0.5);
+        // Bottom bump
+        path.moveTo(w * 0.25, h * 0.5);
+        path.quadraticBezierTo(w * 0.7, h * 0.5, w * 0.7, h * 0.7);
+        path.quadraticBezierTo(w * 0.7, h * 0.85, w * 0.25, h * 0.85);
+        break;
+
+      case 'C':
+        path.addArc(
+          Rect.fromLTWH(w * 0.2, h * 0.15, w * 0.6, h * 0.7),
+          math.pi * 0.3,
+          math.pi * 1.4,
+        );
+        break;
+
+      case 'D':
+      // Vertical line
+        path.moveTo(w * 0.25, h * 0.15);
+        path.lineTo(w * 0.25, h * 0.85);
+        // Curve
+        path.moveTo(w * 0.25, h * 0.15);
+        path.quadraticBezierTo(w * 0.75, h * 0.15, w * 0.75, h * 0.5);
+        path.quadraticBezierTo(w * 0.75, h * 0.85, w * 0.25, h * 0.85);
+        break;
+
+      case 'E':
+      // Top horizontal
+        path.moveTo(w * 0.7, h * 0.15);
+        path.lineTo(w * 0.25, h * 0.15);
+        // Vertical
+        path.lineTo(w * 0.25, h * 0.85);
+        // Bottom horizontal
+        path.lineTo(w * 0.7, h * 0.85);
+        // Middle horizontal
+        path.moveTo(w * 0.25, h * 0.5);
+        path.lineTo(w * 0.65, h * 0.5);
+        break;
+
+      case 'F':
+      // Vertical
+        path.moveTo(w * 0.25, h * 0.85);
+        path.lineTo(w * 0.25, h * 0.15);
+        // Top horizontal
+        path.lineTo(w * 0.7, h * 0.15);
+        // Middle horizontal
+        path.moveTo(w * 0.25, h * 0.5);
+        path.lineTo(w * 0.65, h * 0.5);
+        break;
+
+      case 'G':
+      // C curve
+        path.addArc(
+          Rect.fromLTWH(w * 0.2, h * 0.15, w * 0.6, h * 0.7),
+          math.pi * 0.3,
+          math.pi * 1.4,
+        );
+        // Horizontal bar
+        path.moveTo(w * 0.8, h * 0.5);
+        path.lineTo(w * 0.5, h * 0.5);
+        break;
+
+      case 'H':
+      // Left vertical
+        path.moveTo(w * 0.25, h * 0.15);
+        path.lineTo(w * 0.25, h * 0.85);
+        // Right vertical
+        path.moveTo(w * 0.75, h * 0.15);
+        path.lineTo(w * 0.75, h * 0.85);
+        // Horizontal bar
+        path.moveTo(w * 0.25, h * 0.5);
+        path.lineTo(w * 0.75, h * 0.5);
+        break;
+
+      case 'I':
+      // Top horizontal
+        path.moveTo(w * 0.35, h * 0.15);
+        path.lineTo(w * 0.65, h * 0.15);
+        // Vertical
+        path.moveTo(w * 0.5, h * 0.15);
+        path.lineTo(w * 0.5, h * 0.85);
+        // Bottom horizontal
+        path.moveTo(w * 0.35, h * 0.85);
+        path.lineTo(w * 0.65, h * 0.85);
+        break;
+
+      case 'J':
+      // Vertical with curve
+        path.moveTo(w * 0.6, h * 0.15);
+        path.lineTo(w * 0.6, h * 0.7);
+        path.quadraticBezierTo(w * 0.6, h * 0.85, w * 0.4, h * 0.85);
+        path.quadraticBezierTo(w * 0.25, h * 0.85, w * 0.25, h * 0.7);
+        break;
+
+      case 'K':
+      // Vertical
+        path.moveTo(w * 0.25, h * 0.15);
+        path.lineTo(w * 0.25, h * 0.85);
+        // Top diagonal
+        path.moveTo(w * 0.75, h * 0.15);
+        path.lineTo(w * 0.25, h * 0.5);
+        // Bottom diagonal
+        path.lineTo(w * 0.75, h * 0.85);
+        break;
+
+      case 'L':
+      // Vertical
+        path.moveTo(w * 0.25, h * 0.15);
+        path.lineTo(w * 0.25, h * 0.85);
+        // Bottom horizontal
+        path.lineTo(w * 0.7, h * 0.85);
+        break;
+
+      case 'M':
+      // Left vertical
+        path.moveTo(w * 0.2, h * 0.85);
+        path.lineTo(w * 0.2, h * 0.15);
+        // Peak
+        path.lineTo(w * 0.5, h * 0.4);
+        path.lineTo(w * 0.8, h * 0.15);
+        // Right vertical
+        path.lineTo(w * 0.8, h * 0.85);
+        break;
+
+      case 'N':
+      // Left vertical
+        path.moveTo(w * 0.2, h * 0.85);
+        path.lineTo(w * 0.2, h * 0.15);
+        // Diagonal
+        path.lineTo(w * 0.8, h * 0.85);
+        // Right vertical
+        path.lineTo(w * 0.8, h * 0.15);
+        break;
+
+      case 'O':
+        path.addOval(Rect.fromLTWH(w * 0.2, h * 0.15, w * 0.6, h * 0.7));
+        break;
+
+      case 'P':
+      // Vertical
+        path.moveTo(w * 0.25, h * 0.85);
+        path.lineTo(w * 0.25, h * 0.15);
+        // Top bump
+        path.quadraticBezierTo(w * 0.7, h * 0.15, w * 0.7, h * 0.35);
+        path.quadraticBezierTo(w * 0.7, h * 0.5, w * 0.25, h * 0.5);
+        break;
+
+      case 'Q':
+      // Circle
+        path.addOval(Rect.fromLTWH(w * 0.2, h * 0.15, w * 0.6, h * 0.6));
+        // Tail
+        path.moveTo(w * 0.6, h * 0.6);
+        path.lineTo(w * 0.8, h * 0.85);
+        break;
+
+      case 'R':
+      // Vertical
+        path.moveTo(w * 0.25, h * 0.85);
+        path.lineTo(w * 0.25, h * 0.15);
+        // Top bump
+        path.quadraticBezierTo(w * 0.7, h * 0.15, w * 0.7, h * 0.35);
+        path.quadraticBezierTo(w * 0.7, h * 0.5, w * 0.25, h * 0.5);
+        // Diagonal leg
+        path.moveTo(w * 0.25, h * 0.5);
+        path.lineTo(w * 0.75, h * 0.85);
+        break;
+
+      case 'S':
+        path.moveTo(w * 0.7, h * 0.25);
+        path.quadraticBezierTo(w * 0.7, h * 0.15, w * 0.5, h * 0.15);
+        path.quadraticBezierTo(w * 0.3, h * 0.15, w * 0.3, h * 0.3);
+        path.quadraticBezierTo(w * 0.3, h * 0.45, w * 0.5, h * 0.5);
+        path.quadraticBezierTo(w * 0.7, h * 0.55, w * 0.7, h * 0.7);
+        path.quadraticBezierTo(w * 0.7, h * 0.85, w * 0.5, h * 0.85);
+        path.quadraticBezierTo(w * 0.3, h * 0.85, w * 0.3, h * 0.75);
+        break;
+
+      case 'T':
+      // Top horizontal
+        path.moveTo(w * 0.2, h * 0.15);
+        path.lineTo(w * 0.8, h * 0.15);
+        // Vertical
+        path.moveTo(w * 0.5, h * 0.15);
+        path.lineTo(w * 0.5, h * 0.85);
+        break;
+
+      case 'U':
+        path.moveTo(w * 0.25, h * 0.15);
+        path.lineTo(w * 0.25, h * 0.7);
+        path.quadraticBezierTo(w * 0.25, h * 0.85, w * 0.5, h * 0.85);
+        path.quadraticBezierTo(w * 0.75, h * 0.85, w * 0.75, h * 0.7);
+        path.lineTo(w * 0.75, h * 0.15);
+        break;
+
+      case 'V':
+        path.moveTo(w * 0.2, h * 0.15);
+        path.lineTo(w * 0.5, h * 0.85);
+        path.lineTo(w * 0.8, h * 0.15);
+        break;
+
+      case 'W':
+        path.moveTo(w * 0.15, h * 0.15);
+        path.lineTo(w * 0.3, h * 0.85);
+        path.lineTo(w * 0.5, h * 0.5);
+        path.lineTo(w * 0.7, h * 0.85);
+        path.lineTo(w * 0.85, h * 0.15);
+        break;
+
+      case 'X':
+      // Top-left to bottom-right
+        path.moveTo(w * 0.2, h * 0.15);
+        path.lineTo(w * 0.8, h * 0.85);
+        // Top-right to bottom-left
+        path.moveTo(w * 0.8, h * 0.15);
+        path.lineTo(w * 0.2, h * 0.85);
+        break;
+
+      case 'Y':
+      // Top-left to center
+        path.moveTo(w * 0.2, h * 0.15);
+        path.lineTo(w * 0.5, h * 0.5);
+        // Top-right to center
+        path.moveTo(w * 0.8, h * 0.15);
+        path.lineTo(w * 0.5, h * 0.5);
+        // Center to bottom
+        path.lineTo(w * 0.5, h * 0.85);
+        break;
+
+      case 'Z':
+      // Top horizontal
+        path.moveTo(w * 0.25, h * 0.15);
+        path.lineTo(w * 0.75, h * 0.15);
+        // Diagonal
+        path.lineTo(w * 0.25, h * 0.85);
+        // Bottom horizontal
+        path.lineTo(w * 0.75, h * 0.85);
+        break;
+
+      default:
+      // Fallback to A shape
+        path.moveTo(w * 0.5, h * 0.15);
+        path.lineTo(w * 0.2, h * 0.85);
+        path.moveTo(w * 0.5, h * 0.15);
+        path.lineTo(w * 0.8, h * 0.85);
+        path.moveTo(w * 0.32, h * 0.55);
+        path.lineTo(w * 0.68, h * 0.55);
+    }
+
+    return path;
   }
 
   @override
   void dispose() {
     _celebrationController.dispose();
-    _hintController.dispose();
     _audioPlayer.dispose();
     super.dispose();
   }
 
   Future<void> _playSuccessSound() async {
     if (isMuted) return;
-
     try {
       await _audioPlayer.stop();
       await _audioPlayer.play(AssetSource('audio/succes.mp3'));
@@ -61,45 +410,57 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
     });
   }
 
-  void _onDrawUpdate(Offset point) {
+  void _onFingerMove(Offset finger) {
     if (isTraced) return;
 
-    setState(() {
-      drawnPoints.add(point);
-      _calculateProgress();
-    });
+    bool anyChange = false;
 
-    if (tracingProgress >= 0.75 && !isTraced) {
-      _onLetterCompleted();
+    // Check ALL segments and mark covered points
+    for (int segIdx = 0; segIdx < pathSegments.length; segIdx++) {
+      final segment = pathSegments[segIdx];
+
+      for (int pointIdx = 0; pointIdx < segment.points.length; pointIdx++) {
+        // Skip already covered points
+        if (segmentCoverage[segIdx]!.contains(pointIdx)) continue;
+
+        final point = segment.points[pointIdx];
+
+        // If finger is close enough, mark this point as covered
+        if ((point - finger).distance < 25) {
+          segmentCoverage[segIdx]!.add(pointIdx);
+          anyChange = true;
+        }
+      }
+    }
+
+    if (anyChange) {
+      setState(() {
+        _calculateProgress();
+
+        if (traceProgress >= 1.0 && !isTraced) {
+          _onLetterCompleted();
+        }
+      });
     }
   }
 
   void _calculateProgress() {
-    if (drawnPoints.isEmpty) {
-      tracingProgress = 0.0;
-      return;
+    int totalPoints = 0;
+    int coveredPoints = 0;
+
+    for (int i = 0; i < pathSegments.length; i++) {
+      totalPoints += pathSegments[i].points.length;
+      coveredPoints += segmentCoverage[i]!.length;
     }
 
-    // Simple progress calculation based on coverage
-    Set<String> coveredAreas = {};
-    for (var point in drawnPoints) {
-      int gridX = (point.dx / 30).floor();
-      int gridY = (point.dy / 30).floor();
-      coveredAreas.add('$gridX,$gridY');
-    }
-
-    // Estimate based on letter complexity - more lenient calculation
-    double expectedCoverage = 12 + (letters[currentLetterIndex].codeUnitAt(0) % 8);
-    tracingProgress = (coveredAreas.length / expectedCoverage).clamp(0.0, 1.0);
+    traceProgress = totalPoints > 0 ? (coveredPoints / totalPoints).clamp(0.0, 1.0) : 0.0;
   }
 
   void _onLetterCompleted() {
-    if (isTraced) return;
-
     setState(() {
       isTraced = true;
       stars = List.generate(
-        25,
+        30,
             (index) => Offset(
           40 + math.Random().nextDouble() * 240,
           40 + math.Random().nextDouble() * 300,
@@ -108,29 +469,152 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
     });
 
     _celebrationController.forward(from: 0);
-    _playSuccessSound(); // Play sound when letter is completed
+    _playSuccessSound();
+
+    // Show completion dialog after the last letter (Z)
+    if (currentLetterIndex == letters.length - 1) {
+      Future.delayed(const Duration(milliseconds: 1500), () {
+        _showCompletionDialog();
+      });
+    }
   }
 
   void _nextLetter() {
     if (currentLetterIndex < letters.length - 1) {
       setState(() {
         currentLetterIndex++;
-        drawnPoints = [];
-        isTraced = false;
-        tracingProgress = 0.0;
+        _saveProgress();
+        _initializeLetterPath();
         stars = [];
         _celebrationController.reset();
       });
     }
   }
 
+  void _showCompletionDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        child: Container(
+          padding: const EdgeInsets.all(30),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF667eea), Color(0xFF764ba2), Color(0xFFF093FB)],
+            ),
+            borderRadius: BorderRadius.circular(30),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                '🎉',
+                style: TextStyle(fontSize: 80),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Congratulations!',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 15),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  'You\'ve traced all 26 letters!\nAmazing work! ⭐',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(height: 25),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _clearProgress();
+                        setState(() {
+                          currentLetterIndex = 0;
+                          _initializeLetterPath();
+                          stars = [];
+                          _celebrationController.reset();
+                        });
+                      },
+                      icon: const Icon(Icons.replay, color: Color(0xFF667eea)),
+                      label: const Text(
+                        'Retry',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF667eea),
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        _clearProgress();
+                        Navigator.pop(context);
+                        Navigator.pop(context);
+                      },
+                      icon: const Icon(Icons.home, color: Color(0xFF667eea)),
+                      label: const Text(
+                        'Home',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF667eea),
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _previousLetter() {
     if (currentLetterIndex > 0) {
       setState(() {
         currentLetterIndex--;
-        drawnPoints = [];
-        isTraced = false;
-        tracingProgress = 0.0;
+        _saveProgress();
+        _initializeLetterPath();
         stars = [];
         _celebrationController.reset();
       });
@@ -139,9 +623,7 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
 
   void _resetCurrentLetter() {
     setState(() {
-      drawnPoints = [];
-      isTraced = false;
-      tracingProgress = 0.0;
+      _initializeLetterPath();
       stars = [];
       _celebrationController.reset();
     });
@@ -196,11 +678,11 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.95),
+        color: Colors.white.withOpacity(0.95),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 15,
             offset: const Offset(0, 5),
           ),
@@ -210,7 +692,10 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, color: Color(0xFF6C63FF), size: 24),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              _saveProgress();
+              Navigator.pop(context);
+            },
           ),
           const Expanded(
             child: Text(
@@ -260,7 +745,7 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.9),
+                  color: Colors.white.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(15),
                 ),
                 child: Text(
@@ -280,7 +765,7 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
               borderRadius: BorderRadius.circular(10),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.1),
+                  color: Colors.black.withOpacity(0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -288,12 +773,44 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: LinearProgressIndicator(
-                value: tracingProgress,
-                minHeight: 12,
-                backgroundColor: Colors.white.withValues(alpha: 0.5),
-                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+              child: Stack(
+                children: [
+                  Container(
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  FractionallySizedBox(
+                    widthFactor: traceProgress,
+                    child: Container(
+                      height: 12,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF4CAF50), Color(0xFF81C784)],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF4CAF50).withOpacity(0.5),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            '${(traceProgress * 100).toInt()}% Complete',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: Colors.white.withOpacity(0.9),
             ),
           ),
         ],
@@ -305,30 +822,20 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
     return GestureDetector(
       onPanStart: (details) {
         if (!isTraced) {
-          RenderBox? box = context.findRenderObject() as RenderBox?;
-          if (box != null) {
-            Offset localPosition = box.globalToLocal(details.globalPosition);
-            _onDrawUpdate(localPosition);
-          }
+          RenderBox box = _traceKey.currentContext!.findRenderObject() as RenderBox;
+          Offset localPosition = box.globalToLocal(details.globalPosition);
+          _onFingerMove(localPosition);
         }
       },
       onPanUpdate: (details) {
         if (!isTraced) {
-          RenderBox? box = context.findRenderObject() as RenderBox?;
-          if (box != null) {
-            Offset localPosition = box.globalToLocal(details.globalPosition);
-            _onDrawUpdate(localPosition);
-          }
-        }
-      },
-      onPanEnd: (_) {
-        if (!isTraced) {
-          setState(() {
-            drawnPoints.add(Offset.infinite); // Add break point
-          });
+          RenderBox box = _traceKey.currentContext!.findRenderObject() as RenderBox;
+          Offset localPosition = box.globalToLocal(details.globalPosition);
+          _onFingerMove(localPosition);
         }
       },
       child: Container(
+        key: _traceKey,
         width: 320,
         height: 380,
         decoration: BoxDecoration(
@@ -336,7 +843,7 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
           borderRadius: BorderRadius.circular(30),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF6C63FF).withValues(alpha: 0.2),
+              color: const Color(0xFF6C63FF).withOpacity(0.2),
               blurRadius: 30,
               spreadRadius: 5,
               offset: const Offset(0, 10),
@@ -347,59 +854,19 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
           borderRadius: BorderRadius.circular(30),
           child: Stack(
             children: [
-              // Guide letter with animated hint
-              Center(
-                child: AnimatedBuilder(
-                  animation: _hintController,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity: isTraced ? 0 : (0.15 + (_hintController.value * 0.05)),
-                      child: Text(
-                        letter,
-                        style: TextStyle(
-                          fontSize: 240,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey.shade300,
-                          height: 1.0,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-              // User's drawing
+              // Path-based tracing canvas
               CustomPaint(
                 size: const Size(320, 380),
-                painter: DrawingPainter(points: drawnPoints),
+                painter: LetterPathPainter(
+                  pathSegments: pathSegments,
+                  segmentCoverage: segmentCoverage,
+                  progress: traceProgress,
+                  completed: isTraced,
+                ),
               ),
 
-              // Completed letter
-              if (isTraced)
-                Center(
-                  child: ScaleTransition(
-                    scale: _celebrationController,
-                    child: Text(
-                      letter,
-                      style: TextStyle(
-                        fontSize: 240,
-                        fontWeight: FontWeight.bold,
-                        height: 1.0,
-                        foreground: Paint()
-                          ..shader = const LinearGradient(
-                            colors: [
-                              Color(0xFF667eea),
-                              Color(0xFF764ba2),
-                              Color(0xFFF093FB),
-                            ],
-                          ).createShader(const Rect.fromLTWH(0, 0, 240, 240)),
-                      ),
-                    ),
-                  ),
-                ),
-
               // Instructions
-              if (!isTraced && drawnPoints.isEmpty)
+              if (traceProgress < 0.05)
                 Positioned(
                   bottom: 30,
                   left: 0,
@@ -408,11 +875,11 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6C63FF).withValues(alpha: 0.95),
+                        color: const Color(0xFF6C63FF).withOpacity(0.95),
                         borderRadius: BorderRadius.circular(25),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.2),
+                            color: Colors.black.withOpacity(0.2),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),
@@ -424,7 +891,7 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
                           Icon(Icons.gesture, color: Colors.white, size: 22),
                           SizedBox(width: 10),
                           Text(
-                            'Trace the letter with your finger',
+                            'Trace over the letter path',
                             style: TextStyle(
                               fontSize: 15,
                               color: Colors.white,
@@ -451,7 +918,7 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
                         borderRadius: BorderRadius.circular(25),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF4CAF50).withValues(alpha: 0.5),
+                            color: const Color(0xFF4CAF50).withOpacity(0.5),
                             blurRadius: 15,
                             offset: const Offset(0, 5),
                           ),
@@ -519,9 +986,7 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
             label: 'Previous',
             onPressed: currentLetterIndex > 0 ? _previousLetter : null,
             gradient: currentLetterIndex > 0
-                ? const LinearGradient(
-              colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-            )
+                ? const LinearGradient(colors: [Color(0xFF667eea), Color(0xFF764ba2)])
                 : null,
           ),
           _buildNavButton(
@@ -529,9 +994,7 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
             label: 'Next',
             onPressed: currentLetterIndex < letters.length - 1 ? _nextLetter : null,
             gradient: currentLetterIndex < letters.length - 1
-                ? const LinearGradient(
-              colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-            )
+                ? const LinearGradient(colors: [Color(0xFF667eea), Color(0xFF764ba2)])
                 : null,
           ),
         ],
@@ -552,14 +1015,11 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
           decoration: BoxDecoration(
-            gradient: gradient ??
-                LinearGradient(
-                  colors: [Colors.grey.shade400, Colors.grey.shade500],
-                ),
+            gradient: gradient ?? LinearGradient(colors: [Colors.grey.shade400, Colors.grey.shade500]),
             borderRadius: BorderRadius.circular(25),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.15),
+                color: Colors.black.withOpacity(0.15),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -592,39 +1052,154 @@ class _LetterTracingScreenState extends State<LetterTracingScreen> with TickerPr
   }
 }
 
-class DrawingPainter extends CustomPainter {
+// Helper class to store path segments
+class PathSegment {
   final List<Offset> points;
 
-  DrawingPainter({required this.points});
+  PathSegment({required this.points});
+}
+
+class LetterPathPainter extends CustomPainter {
+  final List<PathSegment> pathSegments;
+  final Map<int, Set<int>> segmentCoverage;
+  final double progress;
+  final bool completed;
+
+  LetterPathPainter({
+    required this.pathSegments,
+    required this.segmentCoverage,
+    required this.progress,
+    required this.completed,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = const Color(0xFF667eea)
-      ..strokeWidth = 8
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
+    // Draw each segment
+    for (int segIdx = 0; segIdx < pathSegments.length; segIdx++) {
+      final segment = pathSegments[segIdx];
+      final coveredPoints = segmentCoverage[segIdx] ?? {};
 
-    for (int i = 0; i < points.length - 1; i++) {
-      if (points[i].isFinite && points[i + 1].isFinite) {
-        canvas.drawLine(points[i], points[i + 1], paint);
+      // Draw guide path (grey)
+      final guidePath = Path();
+      if (segment.points.isNotEmpty) {
+        guidePath.moveTo(segment.points[0].dx, segment.points[0].dy);
+        for (int i = 1; i < segment.points.length; i++) {
+          guidePath.lineTo(segment.points[i].dx, segment.points[i].dy);
+        }
+      }
+
+      final guidePaint = Paint()
+        ..color = Colors.grey.shade300
+        ..strokeWidth = 14
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round;
+
+      canvas.drawPath(guidePath, guidePaint);
+
+      // Draw traced portions with gradient
+      if (coveredPoints.isNotEmpty) {
+        // Group consecutive covered points into paths
+        List<List<int>> groups = [];
+        List<int> currentGroup = [];
+
+        List<int> sortedCovered = coveredPoints.toList()..sort();
+
+        for (int idx in sortedCovered) {
+          if (currentGroup.isEmpty || idx == currentGroup.last + 1 || idx == currentGroup.last) {
+            if (!currentGroup.contains(idx)) {
+              currentGroup.add(idx);
+            }
+          } else {
+            if (currentGroup.isNotEmpty) groups.add(List.from(currentGroup));
+            currentGroup = [idx];
+          }
+        }
+        if (currentGroup.isNotEmpty) groups.add(currentGroup);
+
+        // Draw each traced group
+        for (var group in groups) {
+          if (group.isEmpty) continue;
+
+          final tracedPath = Path();
+          tracedPath.moveTo(
+            segment.points[group[0]].dx,
+            segment.points[group[0]].dy,
+          );
+
+          for (int i = 1; i < group.length; i++) {
+            final idx = group[i];
+            if (idx < segment.points.length) {
+              tracedPath.lineTo(
+                segment.points[idx].dx,
+                segment.points[idx].dy,
+              );
+            }
+          }
+
+          // Glow effect
+          final glowPaint = Paint()
+            ..shader = const LinearGradient(
+              colors: [Color(0xFF4CAF50), Color(0xFF2196F3)],
+            ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+            ..strokeWidth = 20
+            ..style = PaintingStyle.stroke
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.round
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5);
+
+          final tracedPaint = Paint()
+            ..shader = const LinearGradient(
+              colors: [
+                Color(0xFF4CAF50),
+                Color(0xFF2196F3),
+                Color(0xFF9C27B0),
+              ],
+            ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+            ..strokeWidth = 16
+            ..style = PaintingStyle.stroke
+            ..strokeCap = StrokeCap.round
+            ..strokeJoin = StrokeJoin.round;
+
+          canvas.drawPath(tracedPath, glowPaint);
+          canvas.drawPath(tracedPath, tracedPaint);
+        }
       }
     }
 
-    // Draw circles at points for a smoother look
-    final circlePaint = Paint()
-      ..color = const Color(0xFF667eea)
-      ..style = PaintingStyle.fill;
+    // Fill entire letter on completion
+    if (completed) {
+      for (final segment in pathSegments) {
+        if (segment.points.isEmpty) continue;
 
-    for (var point in points) {
-      if (point.isFinite) {
-        canvas.drawCircle(point, 4, circlePaint);
+        final fillPath = Path();
+        fillPath.moveTo(segment.points[0].dx, segment.points[0].dy);
+        for (int i = 1; i < segment.points.length; i++) {
+          fillPath.lineTo(segment.points[i].dx, segment.points[i].dy);
+        }
+
+        final fillPaint = Paint()
+          ..shader = const LinearGradient(
+            colors: [
+              Color(0xFF667eea),
+              Color(0xFF764ba2),
+              Color(0xFFF093FB),
+            ],
+          ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+          ..strokeWidth = 18
+          ..style = PaintingStyle.stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round;
+
+        canvas.drawPath(fillPath, fillPaint);
       }
     }
   }
 
   @override
-  bool shouldRepaint(DrawingPainter oldDelegate) {
-    return oldDelegate.points.length != points.length;
+  bool shouldRepaint(covariant LetterPathPainter oldDelegate) {
+    return oldDelegate.progress != progress ||
+        oldDelegate.completed != completed ||
+        oldDelegate.segmentCoverage != segmentCoverage;
   }
 }
