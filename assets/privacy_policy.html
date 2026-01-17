@@ -12,12 +12,12 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
             color: #333;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 20px;
+            padding: 2rem 1rem;
         }
 
         .container {
@@ -32,131 +32,230 @@
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 40px 30px;
+            padding: 3rem 2rem;
             text-align: center;
         }
 
         .header h1 {
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
 
-        .header h2 {
-            font-size: 1.5em;
-            font-weight: 300;
-            opacity: 0.9;
+        .header .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.95;
         }
 
         .content {
-            padding: 40px 30px;
+            padding: 3rem 2rem;
         }
 
-        .last-updated {
-            background: #f0f4ff;
-            border-left: 4px solid #667eea;
-            padding: 15px 20px;
-            margin-bottom: 30px;
-            border-radius: 5px;
-            font-weight: 600;
+        .intro {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(240, 147, 251, 0.3);
+        }
+
+        .intro p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .section {
+            margin-bottom: 2.5rem;
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section h2 {
             color: #667eea;
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid #667eea;
+            display: inline-block;
         }
 
-        h3 {
+        .section p {
+            margin-bottom: 1rem;
+            color: #555;
+        }
+
+        .section ul {
+            list-style: none;
+            margin: 1rem 0;
+        }
+
+        .section ul li {
+            padding: 0.75rem 0 0.75rem 2rem;
+            position: relative;
+            color: #555;
+        }
+
+        .section ul li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
             color: #667eea;
-            margin-top: 30px;
-            margin-bottom: 15px;
-            font-size: 1.5em;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f4ff;
+            font-weight: bold;
+            font-size: 1.2rem;
         }
 
-        p {
-            margin-bottom: 15px;
-            text-align: justify;
+        .highlight-box {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            border-left: 5px solid #ff6b6b;
         }
 
-        ul {
-            margin: 15px 0;
-            padding-left: 30px;
+        .highlight-box strong {
+            color: #d63031;
         }
 
-        li {
-            margin-bottom: 10px;
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-card h3 {
+            color: #667eea;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .feature-card p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .contact-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .contact-box h2 {
+            color: white;
+            border: none;
+            margin-bottom: 1rem;
+        }
+
+        .contact-box a {
+            color: #ffecd2;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: color 0.3s ease;
+        }
+
+        .contact-box a:hover {
+            color: white;
+        }
+
+        .developer-info {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1.5rem 0;
+            border-left: 5px solid #667eea;
+        }
+
+        .developer-info p {
+            margin: 0.5rem 0;
+        }
+
+        .developer-info strong {
+            color: #667eea;
         }
 
         .footer {
-            background: #f8f9fa;
-            padding: 30px;
+            background: #2d3436;
+            color: white;
+            padding: 2rem;
             text-align: center;
-            border-top: 2px solid #e9ecef;
         }
 
-        .contact-info {
-            background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        .footer p {
+            margin: 0.5rem 0;
         }
 
-        .contact-info strong {
-            color: #667eea;
+        .footer .heart {
+            color: #ff6b6b;
+            animation: heartbeat 1.5s ease-in-out infinite;
         }
 
-        .heart {
-            color: #e74c3c;
-            font-size: 1.2em;
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .badge {
+            display: inline-block;
+            background: #00b894;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin: 0.2rem;
+        }
+
+        .badge.privacy {
+            background: #6c5ce7;
+        }
+
+        .badge.offline {
+            background: #fd79a8;
         }
 
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-
-            .header {
-                padding: 30px 20px;
-            }
-
             .header h1 {
-                font-size: 2em;
-            }
-
-            .header h2 {
-                font-size: 1.2em;
+                font-size: 2rem;
             }
 
             .content {
-                padding: 25px 20px;
+                padding: 2rem 1.5rem;
             }
 
-            h3 {
-                font-size: 1.3em;
+            .section h2 {
+                font-size: 1.5rem;
             }
 
-            .footer {
-                padding: 20px 15px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .header h1 {
-                font-size: 1.6em;
-            }
-
-            .header h2 {
-                font-size: 1em;
-            }
-
-            h3 {
-                font-size: 1.2em;
-            }
-
-            ul {
-                padding-left: 20px;
-            }
-
-            p {
-                text-align: left;
+            .feature-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -164,129 +263,188 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Privacy Policy</h1>
-            <h2>LetterLoo - ABC Fun Learning</h2>
+            <h1>🎨 LetterLoo</h1>
+            <p class="subtitle">ABC Fun Learning - Privacy Policy</p>
+            <div style="margin-top: 1rem;">
+                <span class="badge privacy">Privacy First</span>
+                <span class="badge offline">100% Offline</span>
+                <span class="badge">COPPA Compliant</span>
+            </div>
         </div>
-<div class="content">
-      
-            <h3>Introduction</h3>
-            <p>Welcome to LetterLoo. We are committed to protecting your child's privacy and your right to privacy. LetterLoo is an interactive educational application designed to help children aged 3-6 learn the alphabet through engaging games and activities. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our application. Please read this privacy policy carefully.</p>
 
-            <h3>Information We Collect</h3>
-            <p>LetterLoo is designed with privacy in mind and does NOT collect personal information:</p>
-            <ul>
-                <li><strong>NO Personal Information:</strong> We do not collect any personal information such as names, email addresses, phone numbers, photos, or location data.</li>
-                <li><strong>NO User Accounts:</strong> The app does not require user registration or login.</li>
-                <li><strong>Local Data Only:</strong> All game progress, scores, and settings are stored locally on your device and are never transmitted to external servers.</li>
-                <li><strong>NO Tracking:</strong> We do not track user behavior, usage patterns, or analytics.</li>
-                <li><strong>NO Third-Party Access:</strong> No data is shared with third parties.</li>
-            </ul>
+        <div class="content">
+            <div class="intro">
+                <p>Welcome to LetterLoo! We are committed to protecting your child's privacy and your right to privacy. LetterLoo is an interactive educational application designed to help children aged 3-6 learn the alphabet through engaging games and activities. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our application.</p>
+            </div>
 
-            <h3>How We Use Your Information</h3>
-            <p>Since LetterLoo does not collect any personal information or data, there is no information to use, process, or share. The app operates entirely offline and all data remains on your device.</p>
+            <div class="section">
+                <h2>🔒 Information We Collect</h2>
+                <div class="highlight-box">
+                    <p><strong>LetterLoo is designed with privacy in mind and does NOT collect personal information.</strong></p>
+                </div>
+                <ul>
+                    <li><strong>NO Personal Information:</strong> We do not collect any personal information such as names, email addresses, phone numbers, photos, or location data.</li>
+                    <li><strong>NO User Accounts:</strong> The app does not require user registration or login.</li>
+                    <li><strong>Local Data Only:</strong> All game progress, scores, and settings are stored locally on your device and are never transmitted to external servers.</li>
+                    <li><strong>NO Tracking:</strong> We do not track user behavior, usage patterns, or analytics.</li>
+                    <li><strong>NO Third-Party Access:</strong> No data is shared with third parties.</li>
+                </ul>
+            </div>
 
-            <h3>App Features</h3>
-            <p>LetterLoo includes the following educational activities:</p>
-            <ul>
-                <li><strong>Letter Tracing:</strong> Practice writing letters with guided tracing</li>
-                <li><strong>Matching Game:</strong> Match letters with corresponding objects and animals</li>
-                <li><strong>Sorting Challenge:</strong> Arrange letters in alphabetical order</li>
-                <li><strong>ABC Storybook:</strong> Learn letters through interactive stories with emojis and descriptions</li>
-            </ul>
-            <p>All progress in these games is stored locally on your device.</p>
+            <div class="section">
+                <h2>💡 How We Use Your Information</h2>
+                <p>Since LetterLoo does not collect any personal information or data, there is no information to use, process, or share. The app operates entirely offline and all data remains on your device.</p>
+            </div>
 
-            <h3>Your Child's Privacy</h3>
-            <p>LetterLoo does not collect, store, or transmit any personal information from children or adults. All app data stays on your device. There is nothing to access, update, or delete from our servers because we don't have any.</p>
+            <div class="section">
+                <h2>🎮 App Features</h2>
+                <p>LetterLoo includes the following educational activities:</p>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h3>✏️ Letter Tracing</h3>
+                        <p>Practice writing letters with guided tracing</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>🎯 Matching Game</h3>
+                        <p>Match letters with corresponding objects and animals</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>🔤 Sorting Challenge</h3>
+                        <p>Arrange letters in alphabetical order</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>📚 ABC Storybook</h3>
+                        <p>Learn letters through interactive stories with emojis</p>
+                    </div>
+                </div>
+                <p>All progress in these games is stored locally on your device.</p>
+            </div>
 
-            <h3>Data Storage</h3>
-            <p>All data generated while using LetterLoo is stored locally on your device:</p>
-            <ul>
-                <li>Game progress and scores</li>
-                <li>Completed activities and levels</li>
-                <li>User preferences (sound settings)</li>
-            </ul>
-            <p>This data remains exclusively on your device and is never transmitted to external servers or shared with any third parties.</p>
+            <div class="section">
+                <h2>👶 Your Child's Privacy</h2>
+                <p>LetterLoo does not collect, store, or transmit any personal information from children or adults. All app data stays on your device. There is nothing to access, update, or delete from our servers because we don't have any.</p>
+            </div>
 
-            <h3>Third-Party Services</h3>
-            <p>LetterLoo does NOT:</p>
-            <ul>
-                <li>Use third-party analytics services</li>
-                <li>Display advertisements</li>
-                <li>Integrate with social media platforms</li>
-                <li>Connect to external servers</li>
-                <li>Share data with any third parties</li>
-                <li>Include in-app purchases or payments</li>
-            </ul>
-            <p>The app is completely self-contained and operates independently without any external connections.</p>
+            <div class="section">
+                <h2>💾 Data Storage</h2>
+                <p>All data generated while using LetterLoo is stored locally on your device:</p>
+                <ul>
+                    <li>Game progress and scores</li>
+                    <li>Completed activities and levels</li>
+                    <li>User preferences (sound settings)</li>
+                </ul>
+                <p>This data remains exclusively on your device and is never transmitted to external servers or shared with any third parties.</p>
+            </div>
 
-            <h3>Data Security</h3>
-            <p>All app data is stored securely on your device using standard device security measures. Since no data is transmitted or stored on external servers, there is no risk of data breaches from our application. We recommend:</p>
-            <ul>
-                <li>Keeping your device's operating system updated</li>
-                <li>Using device lock features (PIN, password, biometric)</li>
-                <li>Being cautious with device permissions</li>
-            </ul>
+            <div class="section">
+                <h2>🚫 Third-Party Services</h2>
+                <p><strong>LetterLoo does NOT:</strong></p>
+                <ul>
+                    <li>Use third-party analytics services</li>
+                    <li>Display advertisements</li>
+                    <li>Integrate with social media platforms</li>
+                    <li>Connect to external servers</li>
+                    <li>Share data with any third parties</li>
+                    <li>Include in-app purchases or payments</li>
+                </ul>
+                <p>The app is completely self-contained and operates independently without any external connections.</p>
+            </div>
 
-            <h3>Data Retention and Deletion</h3>
-            <p>To delete all app data:</p>
-            <ul>
-                <li>Simply uninstall the LetterLoo app from your device</li>
-                <li>This will permanently remove all locally stored game progress and settings</li>
-                <li>There is no data stored on external servers to delete</li>
-            </ul>
+            <div class="section">
+                <h2>🛡️ Data Security</h2>
+                <p>All app data is stored securely on your device using standard device security measures. Since no data is transmitted or stored on external servers, there is no risk of data breaches from our application.</p>
+                <p><strong>We recommend:</strong></p>
+                <ul>
+                    <li>Keeping your device's operating system updated</li>
+                    <li>Using device lock features (PIN, password, biometric)</li>
+                    <li>Being cautious with device permissions</li>
+                </ul>
+            </div>
 
-            <h3>App Permissions</h3>
-            <p>LetterLoo requests minimal permissions:</p>
-            <ul>
-                <li><strong>Storage:</strong> To save game progress locally on your device</li>
-            </ul>
-            <p>We do NOT request:</p>
-            <ul>
-                <li>Camera access</li>
-                <li>Microphone access</li>
-                <li>Location access</li>
-                <li>Contact access</li>
-                <li>Internet/Network access (app works fully offline)</li>
-                <li>Phone state or identity</li>
-            </ul>
+            <div class="section">
+                <h2>🗑️ Data Retention and Deletion</h2>
+                <p>To delete all app data:</p>
+                <ul>
+                    <li>Simply uninstall the LetterLoo app from your device</li>
+                    <li>This will permanently remove all locally stored game progress and settings</li>
+                    <li>There is no data stored on external servers to delete</li>
+                </ul>
+            </div>
 
-            <h3>Internet Connection</h3>
-            <p>LetterLoo is fully functional offline and does not require an internet connection to operate. The app does not transmit any data over the internet at any time during normal use.</p>
+            <div class="section">
+                <h2>⚙️ App Permissions</h2>
+                <p><strong>LetterLoo does NOT request any permissions:</strong></p>
+                <ul>
+                    <li>No storage access</li>
+                    <li>No camera access</li>
+                    <li>No microphone access</li>
+                    <li>No location access</li>
+                    <li>No contact access</li>
+                    <li>No internet/network access (app works fully offline)</li>
+                    <li>No phone state or identity</li>
+                </ul>
+                <p>The app operates with zero permissions, ensuring maximum privacy and security for your child.</p>
+            </div>
 
-            <h3>Third-Party Links</h3>
-            <p>LetterLoo does not contain any links to third-party websites or services. The app is self-contained and does not direct users to external content.</p>
+            <div class="section">
+                <h2>📡 Internet Connection</h2>
+                <p>LetterLoo is fully functional offline and does not require an internet connection to operate. The app does not transmit any data over the internet at any time during normal use.</p>
+            </div>
 
-            <h3>Children's Privacy (COPPA Compliance)</h3>
-            <p>LetterLoo is designed specifically for children aged 3-6 years. We are committed to complying with the Children's Online Privacy Protection Act (COPPA). Our app:</p>
-            <ul>
-                <li>Does not collect any personal information from children</li>
-                <li>Does not enable children to publicly post or distribute personal information</li>
-                <li>Does not entice children with games or contests that require disclosure of personal information</li>
-                <li>Does not require registration or account creation</li>
-                <li>Operates entirely offline with no internet connectivity</li>
-            </ul>
-            <p>Since no information is collected, there is no need for parental consent or notification.</p>
+            <div class="section">
+                <h2>🔗 Third-Party Links</h2>
+                <p>LetterLoo does not contain any links to third-party websites or services. The app is self-contained and does not direct users to external content.</p>
+            </div>
 
-            <h3>Parental Control</h3>
-            <p>Since LetterLoo does not collect any personal information, there is no need for parental consent or access to data. Parents have complete control over the app through their device settings and can uninstall it at any time to remove all local data.</p>
+            <div class="section">
+                <h2>👨‍👩‍👧 Children's Privacy (COPPA Compliance)</h2>
+                <p>LetterLoo is designed specifically for children aged 3-6 years. We are committed to complying with the Children's Online Privacy Protection Act (COPPA).</p>
+                <p><strong>Our app:</strong></p>
+                <ul>
+                    <li>Does not collect any personal information from children</li>
+                    <li>Does not enable children to publicly post or distribute personal information</li>
+                    <li>Does not entice children with games or contests that require disclosure of personal information</li>
+                    <li>Does not require registration or account creation</li>
+                    <li>Operates entirely offline with no internet connectivity</li>
+                </ul>
+                <p>Since no information is collected, there is no need for parental consent or notification.</p>
+            </div>
 
-            <h3>International Users</h3>
-            <p>LetterLoo can be used worldwide. All data remains on the user's device regardless of location. No cross-border data transfers occur since no data is transmitted from the app.</p>
+            <div class="section">
+                <h2>👪 Parental Control</h2>
+                <p>Since LetterLoo does not collect any personal information, there is no need for parental consent or access to data. Parents have complete control over the app through their device settings and can uninstall it at any time to remove all local data.</p>
+            </div>
 
-            <h3>Changes to This Privacy Policy</h3>
-            <p>We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date. You are advised to review this Privacy Policy periodically for any changes.</p>
+            <div class="section">
+                <h2>🌍 International Users</h2>
+                <p>LetterLoo can be used worldwide. All data remains on the user's device regardless of location. No cross-border data transfers occur since no data is transmitted from the app.</p>
+            </div>
 
-            <h3>Contact Us</h3>
-            <p>If you have any questions about this Privacy Policy or LetterLoo, please contact us:</p>
-            <div class="contact-info">
-                <p><strong>Email:</strong> Matthewstewartok22@gmail.com</p>
-                <p><strong>App Name:</strong> LetterLoo - ABC Fun Learning</p>
-                <p><strong>Version:</strong> 1.0.0</p>
+            <div class="section">
+                <h2>📝 Changes to This Privacy Policy</h2>
+                <p>We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page. You are advised to review this Privacy Policy periodically for any changes.</p>
+            </div>
+
+            <div class="section">
+                <h2>👨‍💻 Developer Information</h2>
+                <div class="developer-info">
+                    <p><strong>Developer Name:</strong> Matthew Stewart</p>
+                    <p><strong>Email:</strong> Matthewstewartok22@gmail.com</p>
+                    <p><strong>App Name:</strong> LetterLoo - ABC Fun Learning</p>
+                    <p><strong>Version:</strong> 1.0.0</p>
+                </div>
+            </div>
+
+            <div class="contact-box">
+                <h2>📧 Contact Us</h2>
+                <p>If you have any questions or concerns about this Privacy Policy or LetterLoo, please contact us:</p>
+                <p style="margin-top: 1rem;"><a href="mailto:Matthewstewartok22@gmail.com">Matthewstewartok22@gmail.com</a></p>
+                <p style="margin-top: 1rem; font-size: 0.9rem;">We are committed to addressing any inquiries promptly and transparently.</p>
             </div>
         </div>
 
         <div class="footer">
-            <p>&copy; 2026 LetterLoo - ABC Fun Learning. All rights reserved.</p>
+            <p><strong>© 2026 LetterLoo - ABC Fun Learning. All rights reserved.</strong></p>
             <p>Made with <span class="heart">❤️</span> for young learners everywhere</p>
         </div>
     </div>
